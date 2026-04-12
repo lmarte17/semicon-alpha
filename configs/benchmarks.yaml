@@ -1,0 +1,17 @@
+benchmarks:
+  - ticker: SOXX
+    eodhd_symbol: SOXX.US
+    label: iShares Semiconductor ETF
+    benchmark_type: semiconductor_sector_etf
+  - ticker: SMH
+    eodhd_symbol: SMH.US
+    label: VanEck Semiconductor ETF
+    benchmark_type: semiconductor_sector_etf
+  - ticker: QQQ
+    eodhd_symbol: QQQ.US
+    label: Invesco QQQ Trust
+    benchmark_type: growth_technology_etf
+  - ticker: SPY
+    eodhd_symbol: SPY.US
+    label: SPDR S&P 500 ETF Trust
+    benchmark_type: broad_market_etf

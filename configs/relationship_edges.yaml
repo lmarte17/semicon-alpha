@@ -1,0 +1,445 @@
+edges:
+  - edge_id: rel:nvda_tsm_dependent_on
+    source_type: company
+    source_id: company:NVDA
+    target_type: company
+    target_id: company:TSM
+    edge_type: dependent_on
+    weight: 0.98
+    sign: positive
+    confidence: 0.95
+    evidence: NVIDIA depends on TSMC for advanced-node manufacturing capacity.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:amd_tsm_dependent_on
+    source_type: company
+    source_id: company:AMD
+    target_type: company
+    target_id: company:TSM
+    edge_type: dependent_on
+    weight: 0.95
+    sign: positive
+    confidence: 0.9
+    evidence: AMD depends heavily on TSMC for advanced-node compute products.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:avgo_tsm_dependent_on
+    source_type: company
+    source_id: company:AVGO
+    target_type: company
+    target_id: company:TSM
+    edge_type: dependent_on
+    weight: 0.82
+    sign: positive
+    confidence: 0.82
+    evidence: Broadcom custom silicon and networking programs depend on foundry access.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:mrvl_tsm_dependent_on
+    source_type: company
+    source_id: company:MRVL
+    target_type: company
+    target_id: company:TSM
+    edge_type: dependent_on
+    weight: 0.83
+    sign: positive
+    confidence: 0.83
+    evidence: Marvell datacenter and custom-silicon programs depend on external foundry supply.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:qcom_tsm_dependent_on
+    source_type: company
+    source_id: company:QCOM
+    target_type: company
+    target_id: company:TSM
+    edge_type: dependent_on
+    weight: 0.8
+    sign: positive
+    confidence: 0.8
+    evidence: Qualcomm leading-edge mobile and edge-AI products depend on foundry supply.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:tsm_asml_dependent_on
+    source_type: company
+    source_id: company:TSM
+    target_type: company
+    target_id: company:ASML
+    edge_type: dependent_on
+    weight: 0.95
+    sign: positive
+    confidence: 0.95
+    evidence: TSMC depends on ASML lithography systems for leading-edge capacity.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:intc_asml_dependent_on
+    source_type: company
+    source_id: company:INTC
+    target_type: company
+    target_id: company:ASML
+    edge_type: dependent_on
+    weight: 0.9
+    sign: positive
+    confidence: 0.88
+    evidence: Intel leading-edge programs depend on ASML lithography.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:tsm_amat_dependent_on
+    source_type: company
+    source_id: company:TSM
+    target_type: company
+    target_id: company:AMAT
+    edge_type: dependent_on
+    weight: 0.86
+    sign: positive
+    confidence: 0.82
+    evidence: TSMC fab-expansion and process upgrades depend on Applied Materials equipment.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:tsm_lrcx_dependent_on
+    source_type: company
+    source_id: company:TSM
+    target_type: company
+    target_id: company:LRCX
+    edge_type: dependent_on
+    weight: 0.84
+    sign: positive
+    confidence: 0.8
+    evidence: TSMC process flow depends on etch and deposition equipment from Lam Research.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:tsm_klac_dependent_on
+    source_type: company
+    source_id: company:TSM
+    target_type: company
+    target_id: company:KLAC
+    edge_type: dependent_on
+    weight: 0.85
+    sign: positive
+    confidence: 0.81
+    evidence: TSMC leading-edge yields depend on process-control and metrology from KLA.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:mu_hbm_supplier_nvda
+    source_type: company
+    source_id: company:MU
+    target_type: company
+    target_id: company:NVDA
+    edge_type: supplier_to
+    weight: 0.72
+    sign: positive
+    confidence: 0.7
+    evidence: Micron participates in HBM supply linked to AI accelerator demand.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:mu_hbm_supplier_amd
+    source_type: company
+    source_id: company:MU
+    target_type: company
+    target_id: company:AMD
+    edge_type: supplier_to
+    weight: 0.58
+    sign: positive
+    confidence: 0.6
+    evidence: Micron memory demand is linked to accelerator programs across compute vendors.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:asx_packaging_supplier_nvda
+    source_type: company
+    source_id: company:ASX
+    target_type: company
+    target_id: company:NVDA
+    edge_type: supplier_to
+    weight: 0.52
+    sign: positive
+    confidence: 0.55
+    evidence: ASE is exposed to advanced packaging and test demand around AI accelerators.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:amkr_packaging_supplier_amd
+    source_type: company
+    source_id: company:AMKR
+    target_type: company
+    target_id: company:AMD
+    edge_type: supplier_to
+    weight: 0.5
+    sign: positive
+    confidence: 0.52
+    evidence: Amkor participates in packaging and test flows exposed to advanced-node products.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:nvda_amd_competitor
+    source_type: company
+    source_id: company:NVDA
+    target_type: company
+    target_id: company:AMD
+    edge_type: competitor_to
+    weight: 0.86
+    sign: mixed
+    confidence: 0.9
+    evidence: NVIDIA and AMD compete across accelerators and datacenter compute.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:snps_cdns_competitor
+    source_type: company
+    source_id: company:SNPS
+    target_type: company
+    target_id: company:CDNS
+    edge_type: competitor_to
+    weight: 0.78
+    sign: mixed
+    confidence: 0.88
+    evidence: Synopsys and Cadence are core EDA competitors.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:nvda_ai_server_demand
+    source_type: company
+    source_id: company:NVDA
+    target_type: theme
+    target_id: theme:ai_server_demand
+    edge_type: benefits_from
+    weight: 0.99
+    sign: positive
+    confidence: 0.98
+    evidence: NVIDIA is a primary beneficiary of AI server demand.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:amd_ai_server_demand
+    source_type: company
+    source_id: company:AMD
+    target_type: theme
+    target_id: theme:ai_server_demand
+    edge_type: benefits_from
+    weight: 0.84
+    sign: positive
+    confidence: 0.88
+    evidence: AMD is a secondary beneficiary of AI server demand.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:avgo_ai_networking
+    source_type: company
+    source_id: company:AVGO
+    target_type: theme
+    target_id: theme:ai_networking
+    edge_type: benefits_from
+    weight: 0.85
+    sign: positive
+    confidence: 0.86
+    evidence: Broadcom benefits from AI networking and connectivity demand.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:mrvl_ai_networking
+    source_type: company
+    source_id: company:MRVL
+    target_type: theme
+    target_id: theme:ai_networking
+    edge_type: benefits_from
+    weight: 0.83
+    sign: positive
+    confidence: 0.84
+    evidence: Marvell benefits from AI-cluster networking and custom infrastructure demand.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:mu_hbm_demand
+    source_type: company
+    source_id: company:MU
+    target_type: theme
+    target_id: theme:hbm_demand
+    edge_type: benefits_from
+    weight: 0.91
+    sign: positive
+    confidence: 0.9
+    evidence: Micron benefits from HBM demand linked to AI accelerators.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:asx_advanced_packaging
+    source_type: company
+    source_id: company:ASX
+    target_type: theme
+    target_id: theme:advanced_packaging
+    edge_type: benefits_from
+    weight: 0.82
+    sign: positive
+    confidence: 0.82
+    evidence: ASE benefits from advanced-packaging demand.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:amkr_advanced_packaging
+    source_type: company
+    source_id: company:AMKR
+    target_type: theme
+    target_id: theme:advanced_packaging
+    edge_type: benefits_from
+    weight: 0.8
+    sign: positive
+    confidence: 0.8
+    evidence: Amkor benefits from advanced-packaging demand.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:tsm_advanced_packaging
+    source_type: company
+    source_id: company:TSM
+    target_type: theme
+    target_id: theme:advanced_packaging
+    edge_type: exposed_to
+    weight: 0.9
+    sign: mixed
+    confidence: 0.9
+    evidence: TSMC is both a beneficiary and bottleneck around advanced packaging supply.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:tsm_foundry_capacity
+    source_type: company
+    source_id: company:TSM
+    target_type: theme
+    target_id: theme:foundry_capacity
+    edge_type: exposed_to
+    weight: 0.98
+    sign: mixed
+    confidence: 0.98
+    evidence: TSMC is central to foundry-capacity constraints and expansions.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:gfs_mature_node_utilization
+    source_type: company
+    source_id: company:GFS
+    target_type: theme
+    target_id: theme:mature_node_utilization
+    edge_type: exposed_to
+    weight: 0.88
+    sign: mixed
+    confidence: 0.88
+    evidence: GlobalFoundries is highly exposed to mature-node utilization shifts.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:umc_mature_node_utilization
+    source_type: company
+    source_id: company:UMC
+    target_type: theme
+    target_id: theme:mature_node_utilization
+    edge_type: exposed_to
+    weight: 0.86
+    sign: mixed
+    confidence: 0.86
+    evidence: UMC is exposed to mature-node utilization and pricing shifts.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:asml_leading_edge_logic
+    source_type: company
+    source_id: company:ASML
+    target_type: theme
+    target_id: theme:leading_edge_logic
+    edge_type: bottleneck_for
+    weight: 0.98
+    sign: positive
+    confidence: 0.98
+    evidence: ASML lithography is a structural bottleneck for leading-edge logic.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:amat_wfe
+    source_type: company
+    source_id: company:AMAT
+    target_type: theme
+    target_id: theme:wafer_fab_equipment
+    edge_type: benefits_from
+    weight: 0.92
+    sign: positive
+    confidence: 0.92
+    evidence: Applied Materials benefits from wafer fab equipment spending.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:lrcx_wfe
+    source_type: company
+    source_id: company:LRCX
+    target_type: theme
+    target_id: theme:wafer_fab_equipment
+    edge_type: benefits_from
+    weight: 0.9
+    sign: positive
+    confidence: 0.9
+    evidence: Lam Research benefits from wafer fab equipment spending.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:klac_wfe
+    source_type: company
+    source_id: company:KLAC
+    target_type: theme
+    target_id: theme:wafer_fab_equipment
+    edge_type: benefits_from
+    weight: 0.88
+    sign: positive
+    confidence: 0.9
+    evidence: KLA benefits from process-control spending tied to wafer fab equipment.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:snps_eda_complexity
+    source_type: company
+    source_id: company:SNPS
+    target_type: theme
+    target_id: theme:eda_complexity
+    edge_type: benefits_from
+    weight: 0.94
+    sign: positive
+    confidence: 0.93
+    evidence: Synopsys benefits from rising EDA and verification complexity.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:cdns_eda_complexity
+    source_type: company
+    source_id: company:CDNS
+    target_type: theme
+    target_id: theme:eda_complexity
+    edge_type: benefits_from
+    weight: 0.93
+    sign: positive
+    confidence: 0.92
+    evidence: Cadence benefits from rising EDA and system-design complexity.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:mpwr_ai_power
+    source_type: company
+    source_id: company:MPWR
+    target_type: theme
+    target_id: theme:ai_power_management
+    edge_type: benefits_from
+    weight: 0.87
+    sign: positive
+    confidence: 0.86
+    evidence: Monolithic Power benefits from AI power-management demand.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:adi_ai_power
+    source_type: company
+    source_id: company:ADI
+    target_type: theme
+    target_id: theme:ai_power_management
+    edge_type: benefits_from
+    weight: 0.68
+    sign: positive
+    confidence: 0.74
+    evidence: Analog Devices has datacenter and power-delivery exposure.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:on_auto_power
+    source_type: company
+    source_id: company:ON
+    target_type: theme
+    target_id: theme:automotive_power_semis
+    edge_type: benefits_from
+    weight: 0.89
+    sign: positive
+    confidence: 0.9
+    evidence: ON Semiconductor benefits from automotive power-semiconductor demand.
+    evidence_url: null
+    last_updated: "2026-04-12"
+  - edge_id: rel:nxpi_auto_power
+    source_type: company
+    source_id: company:NXPI
+    target_type: theme
+    target_id: theme:automotive_power_semis
+    edge_type: benefits_from
+    weight: 0.86
+    sign: positive
+    confidence: 0.88
+    evidence: NXP benefits from automotive semiconductor demand.
+    evidence_url: null
+    last_updated: "2026-04-12"

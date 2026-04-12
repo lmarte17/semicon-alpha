@@ -1,0 +1,309 @@
+companies:
+  - ticker: NVDA
+    eodhd_symbol: NVDA.US
+    company_name: NVIDIA Corporation
+    exchange: NASDAQ
+    country: United States
+    segment_primary: ai_accelerators
+    segment_secondary: [networking, platform_compute]
+    ecosystem_role: fabless_designer
+    market_cap_bucket: mega
+    is_origin_name_candidate: true
+    notes: AI accelerator demand anchor.
+  - ticker: AMD
+    eodhd_symbol: AMD.US
+    company_name: Advanced Micro Devices, Inc.
+    exchange: NASDAQ
+    country: United States
+    segment_primary: compute
+    segment_secondary: [ai_accelerators, cpus]
+    ecosystem_role: fabless_designer
+    market_cap_bucket: mega
+    is_origin_name_candidate: true
+    notes: Compute competitor with AI accelerator exposure.
+  - ticker: INTC
+    eodhd_symbol: INTC.US
+    company_name: Intel Corporation
+    exchange: NASDAQ
+    country: United States
+    segment_primary: compute
+    segment_secondary: [foundry, cpus]
+    ecosystem_role: idm_foundry
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: Integrated device manufacturer with foundry ambitions.
+  - ticker: MU
+    eodhd_symbol: MU.US
+    company_name: Micron Technology, Inc.
+    exchange: NASDAQ
+    country: United States
+    segment_primary: memory
+    segment_secondary: [hbm, dram, nand]
+    ecosystem_role: memory_supplier
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: Key U.S. memory and HBM name.
+  - ticker: AVGO
+    eodhd_symbol: AVGO.US
+    company_name: Broadcom Inc.
+    exchange: NASDAQ
+    country: United States
+    segment_primary: networking
+    segment_secondary: [custom_asic, connectivity]
+    ecosystem_role: fabless_designer
+    market_cap_bucket: mega
+    is_origin_name_candidate: true
+    notes: AI networking and custom accelerator adjacency.
+  - ticker: MRVL
+    eodhd_symbol: MRVL.US
+    company_name: Marvell Technology, Inc.
+    exchange: NASDAQ
+    country: United States
+    segment_primary: networking
+    segment_secondary: [custom_asic, datacenter]
+    ecosystem_role: fabless_designer
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: Networking and custom silicon exposure.
+  - ticker: QCOM
+    eodhd_symbol: QCOM.US
+    company_name: QUALCOMM Incorporated
+    exchange: NASDAQ
+    country: United States
+    segment_primary: wireless
+    segment_secondary: [edge_ai, mobile]
+    ecosystem_role: fabless_designer
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: Mobile and edge compute exposure.
+  - ticker: ADI
+    eodhd_symbol: ADI.US
+    company_name: Analog Devices, Inc.
+    exchange: NASDAQ
+    country: United States
+    segment_primary: analog_power
+    segment_secondary: [industrial, datacenter_power]
+    ecosystem_role: analog_supplier
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: Analog and signal-chain exposure.
+  - ticker: TXN
+    eodhd_symbol: TXN.US
+    company_name: Texas Instruments Incorporated
+    exchange: NASDAQ
+    country: United States
+    segment_primary: analog_power
+    segment_secondary: [industrial, automotive]
+    ecosystem_role: analog_supplier
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: Analog and embedded processing.
+  - ticker: MCHP
+    eodhd_symbol: MCHP.US
+    company_name: Microchip Technology Incorporated
+    exchange: NASDAQ
+    country: United States
+    segment_primary: microcontrollers
+    segment_secondary: [automotive, industrial]
+    ecosystem_role: mixed_signal_supplier
+    market_cap_bucket: mid
+    is_origin_name_candidate: true
+    notes: Broad industrial and embedded exposure.
+  - ticker: "ON"
+    eodhd_symbol: ON.US
+    company_name: ON Semiconductor Corporation
+    exchange: NASDAQ
+    country: United States
+    segment_primary: analog_power
+    segment_secondary: [automotive, sensors, power_semis]
+    ecosystem_role: power_semiconductor_supplier
+    market_cap_bucket: mid
+    is_origin_name_candidate: true
+    notes: Automotive and power semiconductors.
+  - ticker: NXPI
+    eodhd_symbol: NXPI.US
+    company_name: NXP Semiconductors N.V.
+    exchange: NASDAQ
+    country: Netherlands
+    segment_primary: automotive
+    segment_secondary: [connectivity, industrial]
+    ecosystem_role: mixed_signal_supplier
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: Automotive and industrial semiconductors.
+  - ticker: MPWR
+    eodhd_symbol: MPWR.US
+    company_name: Monolithic Power Systems, Inc.
+    exchange: NASDAQ
+    country: United States
+    segment_primary: analog_power
+    segment_secondary: [ai_power_management, datacenter]
+    ecosystem_role: power_management_supplier
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: AI and datacenter power-management exposure.
+  - ticker: SWKS
+    eodhd_symbol: SWKS.US
+    company_name: Skyworks Solutions, Inc.
+    exchange: NASDAQ
+    country: United States
+    segment_primary: wireless
+    segment_secondary: [rf_front_end]
+    ecosystem_role: rf_supplier
+    market_cap_bucket: mid
+    is_origin_name_candidate: true
+    notes: RF exposure to mobile and connectivity.
+  - ticker: QRVO
+    eodhd_symbol: QRVO.US
+    company_name: Qorvo, Inc.
+    exchange: NASDAQ
+    country: United States
+    segment_primary: wireless
+    segment_secondary: [rf_front_end, defense]
+    ecosystem_role: rf_supplier
+    market_cap_bucket: mid
+    is_origin_name_candidate: true
+    notes: RF and connectivity supplier.
+  - ticker: GFS
+    eodhd_symbol: GFS.US
+    company_name: GlobalFoundries Inc.
+    exchange: NASDAQ
+    country: United States
+    segment_primary: foundry
+    segment_secondary: [mature_node, specialty_process]
+    ecosystem_role: foundry
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: Specialty and mature-node foundry.
+  - ticker: TSM
+    eodhd_symbol: TSM.US
+    company_name: Taiwan Semiconductor Manufacturing Company Limited
+    exchange: NYSE
+    country: Taiwan
+    segment_primary: foundry
+    segment_secondary: [leading_edge_logic, advanced_packaging]
+    ecosystem_role: foundry
+    market_cap_bucket: mega
+    is_origin_name_candidate: true
+    notes: Leading-edge foundry and advanced packaging anchor.
+  - ticker: UMC
+    eodhd_symbol: UMC.US
+    company_name: United Microelectronics Corporation
+    exchange: NYSE
+    country: Taiwan
+    segment_primary: foundry
+    segment_secondary: [mature_node]
+    ecosystem_role: foundry
+    market_cap_bucket: mid
+    is_origin_name_candidate: true
+    notes: Mature-node foundry exposure.
+  - ticker: HIMX
+    eodhd_symbol: HIMX.US
+    company_name: Himax Technologies, Inc.
+    exchange: NASDAQ
+    country: Taiwan
+    segment_primary: display_drivers
+    segment_secondary: [edge_ai, sensors]
+    ecosystem_role: fabless_designer
+    market_cap_bucket: small
+    is_origin_name_candidate: true
+    notes: Small-cap edge and display-adjacent name for lag behavior.
+  - ticker: ASX
+    eodhd_symbol: ASX.US
+    company_name: ASE Technology Holding Co., Ltd.
+    exchange: NYSE
+    country: Taiwan
+    segment_primary: packaging_test
+    segment_secondary: [advanced_packaging, osat]
+    ecosystem_role: outsourced_assembly_test
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: OSAT and advanced packaging exposure.
+  - ticker: AMKR
+    eodhd_symbol: AMKR.US
+    company_name: Amkor Technology, Inc.
+    exchange: NASDAQ
+    country: United States
+    segment_primary: packaging_test
+    segment_secondary: [advanced_packaging, osat]
+    ecosystem_role: outsourced_assembly_test
+    market_cap_bucket: mid
+    is_origin_name_candidate: true
+    notes: Packaging and test exposure.
+  - ticker: AMAT
+    eodhd_symbol: AMAT.US
+    company_name: Applied Materials, Inc.
+    exchange: NASDAQ
+    country: United States
+    segment_primary: equipment
+    segment_secondary: [wafer_fab_equipment, display]
+    ecosystem_role: equipment_vendor
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: Broad wafer fab equipment exposure.
+  - ticker: LRCX
+    eodhd_symbol: LRCX.US
+    company_name: Lam Research Corporation
+    exchange: NASDAQ
+    country: United States
+    segment_primary: equipment
+    segment_secondary: [etch, deposition]
+    ecosystem_role: equipment_vendor
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: Etch and deposition equipment exposure.
+  - ticker: KLAC
+    eodhd_symbol: KLAC.US
+    company_name: KLA Corporation
+    exchange: NASDAQ
+    country: United States
+    segment_primary: equipment
+    segment_secondary: [process_control, metrology]
+    ecosystem_role: equipment_vendor
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: Process control and inspection.
+  - ticker: ASML
+    eodhd_symbol: ASML.US
+    company_name: ASML Holding N.V.
+    exchange: NASDAQ
+    country: Netherlands
+    segment_primary: equipment
+    segment_secondary: [euv, lithography]
+    ecosystem_role: equipment_vendor
+    market_cap_bucket: mega
+    is_origin_name_candidate: true
+    notes: Lithography bottleneck supplier.
+  - ticker: TER
+    eodhd_symbol: TER.US
+    company_name: Teradyne, Inc.
+    exchange: NASDAQ
+    country: United States
+    segment_primary: test
+    segment_secondary: [automation, handlers]
+    ecosystem_role: test_equipment_vendor
+    market_cap_bucket: mid
+    is_origin_name_candidate: true
+    notes: Test equipment and automation.
+  - ticker: SNPS
+    eodhd_symbol: SNPS.US
+    company_name: Synopsys, Inc.
+    exchange: NASDAQ
+    country: United States
+    segment_primary: eda
+    segment_secondary: [ip, design_software]
+    ecosystem_role: eda_vendor
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: EDA and design-IP vendor.
+  - ticker: CDNS
+    eodhd_symbol: CDNS.US
+    company_name: Cadence Design Systems, Inc.
+    exchange: NASDAQ
+    country: United States
+    segment_primary: eda
+    segment_secondary: [verification, system_design]
+    ecosystem_role: eda_vendor
+    market_cap_bucket: large
+    is_origin_name_candidate: true
+    notes: EDA and system-design vendor.

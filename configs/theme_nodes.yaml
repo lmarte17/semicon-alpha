@@ -1,0 +1,49 @@
+themes:
+  - node_id: theme:ai_server_demand
+    theme_name: AI server demand
+    node_category: demand_driver
+    description: Hyperscaler and enterprise demand for AI training and inference infrastructure.
+  - node_id: theme:hbm_demand
+    theme_name: HBM demand
+    node_category: technology
+    description: Demand for high-bandwidth memory in AI accelerators and servers.
+  - node_id: theme:advanced_packaging
+    theme_name: Advanced packaging
+    node_category: bottleneck
+    description: CoWoS, chiplet, 2.5D and 3D packaging capacity constraints and supply.
+  - node_id: theme:foundry_capacity
+    theme_name: Foundry capacity
+    node_category: bottleneck
+    description: Utilization and capacity conditions at semiconductor foundries.
+  - node_id: theme:leading_edge_logic
+    theme_name: Leading-edge logic
+    node_category: technology
+    description: Sub-5nm and adjacent advanced process-node capability.
+  - node_id: theme:memory_pricing
+    theme_name: Memory pricing
+    node_category: segment
+    description: DRAM, NAND, and HBM price-cycle dynamics.
+  - node_id: theme:wafer_fab_equipment
+    theme_name: Wafer fab equipment
+    node_category: segment
+    description: Capital equipment demand for front-end wafer fabrication.
+  - node_id: theme:eda_complexity
+    theme_name: EDA complexity
+    node_category: technology
+    description: Rising design and verification complexity for leading-edge and heterogeneous systems.
+  - node_id: theme:ai_networking
+    theme_name: AI networking
+    node_category: segment
+    description: Datacenter networking and connectivity requirements for AI clusters.
+  - node_id: theme:ai_power_management
+    theme_name: AI power management
+    node_category: segment
+    description: Power-delivery and power-management requirements for AI infrastructure.
+  - node_id: theme:mature_node_utilization
+    theme_name: Mature-node utilization
+    node_category: segment
+    description: Supply-demand and utilization conditions for mature-node fabs.
+  - node_id: theme:automotive_power_semis
+    theme_name: Automotive power semiconductors
+    node_category: demand_driver
+    description: Demand for automotive analog, sensing, and power-management semiconductors.
