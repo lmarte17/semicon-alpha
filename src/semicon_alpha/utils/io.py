@@ -13,8 +13,6 @@ import yaml
 
 def discover_project_root(start: Path | None = None) -> Path:
     current = (start or Path.cwd()).resolve()
-    if current.is_file():
-        current = current.parent
     candidates = [current, *current.parents]
     markers = ("pyproject.toml", "zervehack_semiconductor_project_plan.md")
     for candidate in candidates:
