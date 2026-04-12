@@ -96,6 +96,76 @@ class EnrichedArticleRecord(FlatRecordModel):
     error_message: str | None = None
 
 
+class EventEntityMentionRecord(FlatRecordModel):
+    event_id: str
+    article_id: str
+    entity_id: str
+    ticker: str
+    company_name: str
+    matched_aliases: list[str]
+    title_aliases: list[str]
+    body_aliases: list[str]
+    title_mentions: int
+    body_mentions: int
+    match_score: float
+    is_origin_company: bool
+    processed_at_utc: datetime
+
+
+class EventClassificationRecord(FlatRecordModel):
+    event_id: str
+    article_id: str
+    classifier_version: str
+    event_type: str
+    label: str
+    candidate_rank: int
+    score: float
+    confidence: float
+    matched_title_keywords: list[str]
+    matched_body_keywords: list[str]
+    segment_support: list[str]
+    theme_support: list[str]
+    is_selected: bool
+    processed_at_utc: datetime
+
+
+class EventThemeMappingRecord(FlatRecordModel):
+    event_id: str
+    article_id: str
+    theme_id: str
+    theme_name: str
+    mapping_sources: list[str]
+    matched_keywords: list[str]
+    related_tickers: list[str]
+    match_score: float
+    is_primary: bool
+    processed_at_utc: datetime
+
+
+class StructuredEventRecord(FlatRecordModel):
+    event_id: str
+    article_id: str
+    classifier_version: str
+    headline: str
+    source: str
+    source_url: str
+    canonical_url: str | None = None
+    published_at_utc: datetime | None = None
+    summary: str
+    origin_companies: list[str]
+    mentioned_companies: list[str]
+    primary_segment: str | None = None
+    secondary_segments: list[str]
+    primary_themes: list[str]
+    event_type: str
+    direction: str
+    severity: str
+    confidence: float
+    reasoning: str
+    market_relevance_score: float
+    processed_at_utc: datetime
+
+
 class UniverseCompanyConfig(FlatRecordModel):
     ticker: str
     eodhd_symbol: str

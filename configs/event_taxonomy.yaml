@@ -1,0 +1,428 @@
+version: "2026-04-12.event-intelligence.v1"
+
+semiconductor_keywords:
+  - semiconductor
+  - chip
+  - foundry
+  - hbm
+  - packaging
+  - lithography
+  - fab
+  - ai server
+  - gpu
+
+direction_keywords:
+  positive:
+    - beat
+    - benefits
+    - collaboration
+    - demand surge
+    - expand
+    - expansion
+    - growth
+    - increase
+    - partnership
+    - ramp
+    - rebound
+    - recovery
+    - strong
+    - upside
+  negative:
+    - ban
+    - bottleneck
+    - cut
+    - curbs
+    - delay
+    - disruption
+    - miss
+    - outage
+    - pressure
+    - restriction
+    - sanctions
+    - shortage
+    - slowdown
+    - suspend
+    - tight
+    - weak
+  mixed:
+    - however
+    - mixed
+    - offset
+    - uncertain
+    - while
+
+severity_keywords:
+  critical:
+    - earthquake
+    - fire
+    - halt
+    - shutdown
+    - suspension
+    - export ban
+  high:
+    - bottleneck
+    - disruption
+    - guidance cut
+    - restriction
+    - sanctions
+    - shortage
+    - tight
+  medium:
+    - expansion
+    - inventory
+    - partnership
+    - pricing
+    - ramp
+    - utilization
+
+event_types:
+  - event_type: export_controls_regulation
+    label: Export Controls / Regulation
+    description: Policy changes that restrict semiconductor trade, technology transfer, or equipment access.
+    keywords:
+      - export control
+      - export controls
+      - entity list
+      - license requirement
+      - restricted shipment
+      - sanctions
+      - shipment restriction
+      - trade restriction
+    secondary_keywords:
+      - ban
+      - curbs
+      - regulation
+      - rules tighten
+      - tariff
+    theme_ids:
+      - theme:leading_edge_logic
+      - theme:wafer_fab_equipment
+    segment_hints:
+      - equipment
+      - foundry
+      - eda
+    default_direction: negative
+    base_severity: high
+
+  - event_type: ai_demand_hyperscaler_capex
+    label: AI Demand / Hyperscaler Capex
+    description: Demand or capex changes tied to AI servers, accelerators, or hyperscaler infrastructure.
+    keywords:
+      - ai demand
+      - ai server
+      - accelerator demand
+      - hyperscaler capex
+      - training cluster
+      - gpu demand
+    secondary_keywords:
+      - cloud spending
+      - inference demand
+      - datacenter demand
+      - server buildout
+    theme_ids:
+      - theme:ai_server_demand
+      - theme:ai_networking
+      - theme:ai_power_management
+      - theme:hbm_demand
+    segment_hints:
+      - ai_accelerators
+      - networking
+      - analog_power
+      - packaging_test
+      - memory
+    default_direction: positive
+    base_severity: high
+
+  - event_type: hbm_memory_pricing
+    label: HBM / Memory Pricing
+    description: Price, supply, or demand changes for HBM, DRAM, NAND, or adjacent memory markets.
+    keywords:
+      - dram pricing
+      - hbm
+      - hbm pricing
+      - high bandwidth memory
+      - memory prices
+      - memory pricing
+      - nand pricing
+    secondary_keywords:
+      - bits supply
+      - contract pricing
+      - memory market
+      - spot pricing
+    theme_ids:
+      - theme:hbm_demand
+      - theme:memory_pricing
+    segment_hints:
+      - memory
+      - ai_accelerators
+      - packaging_test
+    default_direction: ambiguous
+    base_severity: medium
+
+  - event_type: advanced_packaging_capacity
+    label: Advanced Packaging Capacity
+    description: Constraints or expansions in CoWoS, chiplet, substrate, OSAT, or advanced packaging supply.
+    keywords:
+      - advanced packaging
+      - chiplet packaging
+      - cowos
+      - packaging capacity
+      - substrate shortage
+    secondary_keywords:
+      - 2.5d packaging
+      - 3d packaging
+      - osat
+    theme_ids:
+      - theme:advanced_packaging
+      - theme:hbm_demand
+    segment_hints:
+      - packaging_test
+      - foundry
+      - memory
+    default_direction: mixed
+    base_severity: high
+
+  - event_type: foundry_capacity_or_utilization
+    label: Foundry Capacity / Utilization
+    description: Changes in foundry utilization, wafer starts, capacity expansion, or mature-node availability.
+    keywords:
+      - capacity expansion
+      - fab utilization
+      - foundry capacity
+      - foundry utilization
+      - wafer starts
+    secondary_keywords:
+      - mature node
+      - underutilization
+      - utilization rate
+    theme_ids:
+      - theme:foundry_capacity
+      - theme:mature_node_utilization
+    segment_hints:
+      - foundry
+      - compute
+      - automotive
+    default_direction: mixed
+    base_severity: medium
+
+  - event_type: node_ramp_or_process_technology
+    label: Node Ramp / Process Technology
+    description: Yield, timing, or competitiveness changes tied to advanced process nodes and technology ramps.
+    keywords:
+      - 2nm
+      - 3nm
+      - 5nm
+      - process technology
+      - process node
+    secondary_keywords:
+      - gaa
+      - gate all around
+      - node ramp
+      - yield improvement
+    theme_ids:
+      - theme:leading_edge_logic
+      - theme:foundry_capacity
+    segment_hints:
+      - foundry
+      - equipment
+      - compute
+    default_direction: mixed
+    base_severity: medium
+
+  - event_type: equipment_orders_or_capex
+    label: Equipment Orders / Capex
+    description: Tool demand, WFE capex, or order activity for lithography, etch, deposition, or process-control equipment.
+    keywords:
+      - capex
+      - equipment order
+      - lithography tool
+      - wafer fab equipment
+      - wfe
+    secondary_keywords:
+      - deposition tool
+      - etch tool
+      - metrology tool
+      - tool spending
+    theme_ids:
+      - theme:wafer_fab_equipment
+      - theme:leading_edge_logic
+    segment_hints:
+      - equipment
+      - foundry
+    default_direction: mixed
+    base_severity: medium
+
+  - event_type: supply_disruption
+    label: Supply Disruption
+    description: Physical or operational disruptions that impair semiconductor supply, production, or logistics.
+    keywords:
+      - contamination
+      - disruption
+      - earthquake
+      - outage
+      - shutdown
+      - strike
+    secondary_keywords:
+      - delay
+      - logistics
+      - production halt
+      - supply chain disruption
+    theme_ids:
+      - theme:foundry_capacity
+      - theme:advanced_packaging
+    segment_hints:
+      - foundry
+      - packaging_test
+      - equipment
+    default_direction: negative
+    base_severity: critical
+
+  - event_type: earnings_or_guidance
+    label: Earnings / Guidance
+    description: Quarterly results, management guidance, or bookings updates with semiconductor relevance.
+    keywords:
+      - earnings
+      - eps
+      - guidance
+      - quarterly results
+      - revenue outlook
+    secondary_keywords:
+      - bookings
+      - gross margin
+      - investor day
+      - outlook
+    theme_ids: []
+    segment_hints:
+      - compute
+      - memory
+      - equipment
+      - networking
+    default_direction: ambiguous
+    base_severity: medium
+
+  - event_type: design_win_or_strategic_partnership
+    label: Design Win / Strategic Partnership
+    description: Design wins, collaborations, supply agreements, or strategic partnerships across the ecosystem.
+    keywords:
+      - collaboration
+      - customer win
+      - design win
+      - joint development
+      - partnership
+      - supply agreement
+    secondary_keywords:
+      - alliance
+      - co develop
+      - strategic agreement
+      - working together
+    theme_ids:
+      - theme:ai_server_demand
+      - theme:ai_networking
+    segment_hints:
+      - ai_accelerators
+      - networking
+      - eda
+      - foundry
+    default_direction: positive
+    base_severity: medium
+
+  - event_type: inventory_correction_or_recovery
+    label: Inventory Correction / Recovery
+    description: Destocking, restocking, and channel-inventory cycle shifts across semiconductor segments.
+    keywords:
+      - channel inventory
+      - destocking
+      - inventory correction
+      - inventory digestion
+      - restocking
+    secondary_keywords:
+      - backlog normalization
+      - inventory recovery
+      - normalizing inventory
+    theme_ids:
+      - theme:memory_pricing
+      - theme:mature_node_utilization
+    segment_hints:
+      - memory
+      - analog_power
+      - automotive
+      - wireless
+    default_direction: mixed
+    base_severity: medium
+
+  - event_type: pricing_pressure
+    label: Pricing Pressure
+    description: ASP pressure, discounting, commoditization, or margin compression in semiconductor markets.
+    keywords:
+      - asp pressure
+      - discounting
+      - margin pressure
+      - price cut
+      - pricing pressure
+    secondary_keywords:
+      - commoditization
+      - weaker pricing
+    theme_ids:
+      - theme:memory_pricing
+      - theme:mature_node_utilization
+    segment_hints:
+      - memory
+      - foundry
+      - wireless
+    default_direction: negative
+    base_severity: medium
+
+  - event_type: geopolitical_tension
+    label: Geopolitical Tension
+    description: Military, diplomatic, or cross-border tensions with semiconductor supply-chain implications.
+    keywords:
+      - geopolitical tension
+      - military exercise
+      - taiwan strait
+      - trade war
+    secondary_keywords:
+      - china tension
+      - escalation
+      - retaliatory
+      - strategic rivalry
+    theme_ids:
+      - theme:foundry_capacity
+      - theme:leading_edge_logic
+    segment_hints:
+      - foundry
+      - equipment
+      - packaging_test
+    default_direction: negative
+    base_severity: high
+
+  - event_type: mna_or_strategic_restructuring
+    label: M&A / Strategic Restructuring
+    description: Acquisitions, divestitures, spin-offs, restructurings, or material workforce changes.
+    keywords:
+      - acquisition
+      - divestiture
+      - merger
+      - restructuring
+      - spin off
+    secondary_keywords:
+      - layoffs
+      - portfolio review
+      - strategic review
+    theme_ids: []
+    segment_hints:
+      - compute
+      - equipment
+      - eda
+      - packaging_test
+    default_direction: mixed
+    base_severity: medium
+
+  - event_type: unclassified_semiconductor_event
+    label: Unclassified Semiconductor Event
+    description: Fallback class for semiconductor-relevant articles that do not strongly match a more specific taxonomy bucket yet.
+    keywords: []
+    secondary_keywords: []
+    theme_ids: []
+    segment_hints: []
+    default_direction: ambiguous
+    base_severity: low

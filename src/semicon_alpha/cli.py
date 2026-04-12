@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import logging
 
+from semicon_alpha.events import EventIntelligenceService
 from semicon_alpha.ingestion.fmp import FMPIngestionService
 from semicon_alpha.ingestion.lithos import LithosIngestionService
 from semicon_alpha.ingestion.reference import ReferenceDataService
@@ -27,6 +28,12 @@ def build_parser() -> argparse.ArgumentParser:
     news_enrich.add_argument("--limit", type=int, default=25)
     news_enrich.add_argument("--force", action="store_true")
 
+    event_sync = subparsers.add_parser(
+        "event-sync", help="Convert enriched articles into structured event intelligence datasets"
+    )
+    event_sync.add_argument("--limit", type=int, default=50)
+    event_sync.add_argument("--force", action="store_true")
+
     market_sync = subparsers.add_parser(
         "market-sync", help="Fetch FMP daily price history for the curated universe"
     )
@@ -39,11 +46,12 @@ def build_parser() -> argparse.ArgumentParser:
     reference_sync.add_argument("--skip-exchange-symbols", action="store_true")
 
     ingest_all = subparsers.add_parser(
-        "ingest-all", help="Run news, reference, and market ingestion together"
+        "ingest-all", help="Run news, reference, market ingestion, and event intelligence together"
     )
     ingest_all.add_argument("--start", required=True, help="Start date in YYYY-MM-DD format")
     ingest_all.add_argument("--end", help="Optional end date in YYYY-MM-DD format")
     ingest_all.add_argument("--enrich-limit", type=int, default=25)
+    ingest_all.add_argument("--event-limit", type=int, default=50)
     ingest_all.add_argument("--skip-exchange-symbols", action="store_true")
 
     subparsers.add_parser("db-sync", help="Refresh DuckDB views over processed parquet datasets")
@@ -60,6 +68,7 @@ def main() -> None:
 
     lithos_service = LithosIngestionService(settings)
     enrichment_service = SourceEnrichmentService(settings)
+    event_service = EventIntelligenceService(settings)
     market_service = FMPIngestionService(settings)
     reference_service = ReferenceDataService(settings, market_service)
     catalog = DuckDBCatalog(settings)
@@ -72,6 +81,17 @@ def main() -> None:
     if args.command == "news-enrich":
         result = enrichment_service.run(limit=args.limit, force=args.force)
         LOGGER.info("Enriched %s articles", result["processed_count"])
+        return
+
+    if args.command == "event-sync":
+        result = event_service.run(limit=args.limit, force=args.force)
+        LOGGER.info(
+            "Structured %s events with %s entity mentions, %s classifications, and %s theme mappings",
+            result["event_count"],
+            result["entity_count"],
+            result["classification_count"],
+            result["theme_count"],
+        )
         return
 
     if args.command == "market-sync":
@@ -97,11 +117,13 @@ def main() -> None:
             skip_exchange_symbols=args.skip_exchange_symbols
         )
         market = market_service.sync_market_data(start=args.start, end=args.end)
+        events = event_service.run(limit=args.event_limit, force=False)
         LOGGER.info(
-            "All ingestion complete: snapshot=%s articles=%s enriched=%s company_rows=%s benchmark_rows=%s companies=%s",
+            "All ingestion complete: snapshot=%s articles=%s enriched=%s events=%s company_rows=%s benchmark_rows=%s companies=%s",
             snapshot["snapshot_id"],
             snapshot["article_count"],
             enriched["processed_count"],
+            events["event_count"],
             market["company_rows"],
             market["benchmark_rows"],
             reference["company_count"],

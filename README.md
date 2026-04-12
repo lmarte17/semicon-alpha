@@ -2,12 +2,13 @@
 
 This repository is the Phase 1 intelligence-engine foundation for a semiconductor event propagation product.
 
-The current build implements the full data-ingestion layer described in [zervehack_semiconductor_project_plan.md](./zervehack_semiconductor_project_plan.md), with decisions shaped by the longer-term analyst terminal in [PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md](./PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md).
+The current build implements the Phase 1 ingestion and Event Intelligence layers described in [zervehack_semiconductor_project_plan.md](./zervehack_semiconductor_project_plan.md), with decisions shaped by the longer-term analyst terminal in [PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md](./PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md).
 
 ## What Exists
 
 - Lithos snapshot ingestion for semiconductor news discovery
 - Source-article enrichment with metadata and body extraction
+- Event Intelligence conversion from enriched articles into structured semiconductor event records
 - FMP market-price and company-profile ingestion
 - Curated instrument-directory generation for exchange/ticker reference data
 - Curated ecosystem reference-data loaders for companies, themes, and relationships
@@ -17,10 +18,10 @@ The current build implements the full data-ingestion layer described in [zerveha
 
 ## Why It Is Shaped This Way
 
-Phase 2 requires stable entities, evidence links, document history, and inspectable intermediate datasets. The ingestion layer therefore stores:
+Phase 2 requires stable entities, evidence links, document history, and inspectable intermediate datasets. The current Phase 1 build therefore stores:
 
 - immutable raw snapshots and source HTML
-- normalized discovery/enrichment tables
+- normalized discovery, enrichment, and event-intelligence tables
 - stable IDs for articles, companies, themes, and relationships
 - reference tables that can feed the future graph and terminal layers
 
@@ -45,19 +46,25 @@ semicon-alpha news-snapshot
 semicon-alpha news-enrich --limit 20
 ```
 
-5. Build reference datasets and fetch company profiles:
+5. Convert enriched articles into structured event datasets:
+
+```bash
+semicon-alpha event-sync --limit 20
+```
+
+6. Build reference datasets and fetch company profiles:
 
 ```bash
 semicon-alpha reference-sync
 ```
 
-6. Backfill prices for the curated universe and benchmarks:
+7. Backfill prices for the curated universe and benchmarks:
 
 ```bash
 semicon-alpha market-sync --start 2024-01-01
 ```
 
-7. Refresh DuckDB views for the processed datasets:
+8. Refresh DuckDB views for the processed datasets:
 
 ```bash
 semicon-alpha db-sync
@@ -70,6 +77,10 @@ semicon-alpha db-sync
 - `data/processed/news_article_observations.parquet`
 - `data/processed/news_articles_discovered.parquet`
 - `data/processed/news_articles_enriched.parquet`
+- `data/processed/news_event_entities.parquet`
+- `data/processed/news_event_classifications.parquet`
+- `data/processed/news_event_themes.parquet`
+- `data/processed/news_events_structured.parquet`
 - `data/processed/company_registry.parquet`
 - `data/processed/company_relationships.parquet`
 - `data/processed/theme_nodes.parquet`
@@ -84,6 +95,7 @@ semicon-alpha db-sync
 
 - Lithos is treated as a discovery surface, not the final source of truth for `published_at`.
 - FMP is used for price history and company profiles.
+- Event Intelligence is deterministic and config-driven for the current MVP, with tracked-universe entity extraction and taxonomy-based event classification.
 - The `exchange_symbols` dataset is derived from the curated instrument universe plus cached profile metadata, so it does not consume additional API quota.
 - Profile syncs are cache-aware so normal daily workflows stay well under free-tier request caps.
 - DuckDB is the local analytical query layer on top of parquet, not a replacement for the raw or processed storage layers.
