@@ -17,6 +17,7 @@ from semicon_alpha.models.records import (
     SourceRegistryRecord,
 )
 from semicon_alpha.settings import Settings
+from semicon_alpha.storage import DuckDBCatalog
 from semicon_alpha.utils.http import build_http_client
 from semicon_alpha.utils.io import (
     normalize_whitespace,
@@ -41,6 +42,7 @@ class LithosIngestionService:
     def __init__(self, settings: Settings, client=None) -> None:
         self.settings = settings
         self.client = client or build_http_client(settings)
+        self.catalog = DuckDBCatalog(settings)
         self.snapshot_table_path = settings.processed_dir / "lithos_snapshots.parquet"
         self.source_registry_path = settings.processed_dir / "news_source_registry.parquet"
         self.article_observation_path = settings.processed_dir / "news_article_observations.parquet"
@@ -104,6 +106,7 @@ class LithosIngestionService:
             unique_keys=["article_id"],
             sort_by=["last_seen_at_utc"],
         )
+        self.catalog.refresh_processed_views()
 
         return {"snapshot_id": snapshot_id, "article_count": len(observation_records)}
 

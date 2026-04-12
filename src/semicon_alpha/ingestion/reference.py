@@ -4,7 +4,7 @@ from typing import Iterable
 
 import pandas as pd
 
-from semicon_alpha.ingestion.eodhd import EODHDIngestionService
+from semicon_alpha.ingestion.fmp import FMPIngestionService
 from semicon_alpha.models.records import (
     CompanyFundamentalRecord,
     CompanyRegistryRecord,
@@ -13,13 +13,15 @@ from semicon_alpha.models.records import (
     UniverseCompanyConfig,
 )
 from semicon_alpha.settings import Settings
+from semicon_alpha.storage import DuckDBCatalog
 from semicon_alpha.utils.io import load_yaml, now_utc, upsert_parquet
 
 
 class ReferenceDataService:
-    def __init__(self, settings: Settings, market_service: EODHDIngestionService) -> None:
+    def __init__(self, settings: Settings, market_service: FMPIngestionService) -> None:
         self.settings = settings
         self.market_service = market_service
+        self.catalog = DuckDBCatalog(settings)
         self.company_registry_path = settings.processed_dir / "company_registry.parquet"
         self.theme_nodes_path = settings.processed_dir / "theme_nodes.parquet"
         self.company_relationships_path = settings.processed_dir / "company_relationships.parquet"
@@ -31,7 +33,7 @@ class ReferenceDataService:
         relationships = self.load_relationships()
 
         if not skip_exchange_symbols:
-            exchange_codes = {company.eodhd_symbol.split(".")[-1] for company in companies}
+            exchange_codes = {company.exchange for company in companies}
             self.market_service.sync_exchange_symbols(exchange_codes)
 
         fundamentals = self.market_service.sync_company_fundamentals(companies)
@@ -50,6 +52,7 @@ class ReferenceDataService:
             theme_relationships,
             unique_keys=["edge_id"],
         )
+        self.catalog.refresh_processed_views()
         return {
             "company_count": len(company_registry),
             "theme_count": len(themes),

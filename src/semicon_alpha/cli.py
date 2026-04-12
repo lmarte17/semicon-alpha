@@ -3,11 +3,12 @@ from __future__ import annotations
 import argparse
 import logging
 
-from semicon_alpha.ingestion.eodhd import EODHDIngestionService
+from semicon_alpha.ingestion.fmp import FMPIngestionService
 from semicon_alpha.ingestion.lithos import LithosIngestionService
 from semicon_alpha.ingestion.reference import ReferenceDataService
 from semicon_alpha.ingestion.source_enrichment import SourceEnrichmentService
 from semicon_alpha.settings import Settings
+from semicon_alpha.storage import DuckDBCatalog
 from semicon_alpha.utils.logging import configure_logging
 
 
@@ -27,13 +28,13 @@ def build_parser() -> argparse.ArgumentParser:
     news_enrich.add_argument("--force", action="store_true")
 
     market_sync = subparsers.add_parser(
-        "market-sync", help="Fetch EODHD daily price history for the curated universe"
+        "market-sync", help="Fetch FMP daily price history for the curated universe"
     )
     market_sync.add_argument("--start", required=True, help="Start date in YYYY-MM-DD format")
     market_sync.add_argument("--end", help="Optional end date in YYYY-MM-DD format")
 
     reference_sync = subparsers.add_parser(
-        "reference-sync", help="Build reference datasets and fetch company fundamentals"
+        "reference-sync", help="Build reference datasets and fetch company profiles"
     )
     reference_sync.add_argument("--skip-exchange-symbols", action="store_true")
 
@@ -44,6 +45,8 @@ def build_parser() -> argparse.ArgumentParser:
     ingest_all.add_argument("--end", help="Optional end date in YYYY-MM-DD format")
     ingest_all.add_argument("--enrich-limit", type=int, default=25)
     ingest_all.add_argument("--skip-exchange-symbols", action="store_true")
+
+    subparsers.add_parser("db-sync", help="Refresh DuckDB views over processed parquet datasets")
 
     return parser
 
@@ -57,8 +60,9 @@ def main() -> None:
 
     lithos_service = LithosIngestionService(settings)
     enrichment_service = SourceEnrichmentService(settings)
-    market_service = EODHDIngestionService(settings)
+    market_service = FMPIngestionService(settings)
     reference_service = ReferenceDataService(settings, market_service)
+    catalog = DuckDBCatalog(settings)
 
     if args.command == "news-snapshot":
         result = lithos_service.run()
@@ -102,6 +106,11 @@ def main() -> None:
             market["benchmark_rows"],
             reference["company_count"],
         )
+        return
+
+    if args.command == "db-sync":
+        result = catalog.refresh_processed_views()
+        LOGGER.info("DuckDB catalog refreshed for %s datasets", result["dataset_count"])
         return
 
     parser.error(f"Unknown command: {args.command}")

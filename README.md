@@ -8,9 +8,11 @@ The current build implements the full data-ingestion layer described in [zerveha
 
 - Lithos snapshot ingestion for semiconductor news discovery
 - Source-article enrichment with metadata and body extraction
-- EODHD market-price and fundamentals ingestion
+- FMP market-price and company-profile ingestion
+- Curated instrument-directory generation for exchange/ticker reference data
 - Curated ecosystem reference-data loaders for companies, themes, and relationships
 - Provenance-first raw artifact storage and normalized parquet datasets
+- DuckDB query layer over the processed parquet datasets
 - CLI entrypoints and tests
 
 ## Why It Is Shaped This Way
@@ -24,7 +26,7 @@ Phase 2 requires stable entities, evidence links, document history, and inspecta
 
 ## Quick Start
 
-1. Ensure `EODHD_API_KEY` is available in the environment or `.env`.
+1. Ensure `FMP_API_KEY` is available in the environment or `.env`.
 2. Install the package:
 
 ```bash
@@ -43,7 +45,7 @@ semicon-alpha news-snapshot
 semicon-alpha news-enrich --limit 20
 ```
 
-5. Build reference datasets and fetch company fundamentals:
+5. Build reference datasets and fetch company profiles:
 
 ```bash
 semicon-alpha reference-sync
@@ -53,6 +55,12 @@ semicon-alpha reference-sync
 
 ```bash
 semicon-alpha market-sync --start 2024-01-01
+```
+
+7. Refresh DuckDB views for the processed datasets:
+
+```bash
+semicon-alpha db-sync
 ```
 
 ## Primary Datasets
@@ -68,11 +76,16 @@ semicon-alpha market-sync --start 2024-01-01
 - `data/processed/theme_relationships.parquet`
 - `data/processed/market_prices_daily.parquet`
 - `data/processed/benchmark_prices_daily.parquet`
+- `data/processed/exchange_symbols.parquet`
 - `data/processed/company_fundamentals.parquet`
+- `data/semicon_alpha.duckdb`
 
 ## Notes
 
 - Lithos is treated as a discovery surface, not the final source of truth for `published_at`.
-- EODHD is used for price history and company fundamentals.
+- FMP is used for price history and company profiles.
+- The `exchange_symbols` dataset is derived from the curated instrument universe plus cached profile metadata, so it does not consume additional API quota.
+- Profile syncs are cache-aware so normal daily workflows stay well under free-tier request caps.
+- DuckDB is the local analytical query layer on top of parquet, not a replacement for the raw or processed storage layers.
 - Relationship edges are intentionally config-driven so the graph layer remains explainable.
-- If the EODHD fundamentals endpoint is unavailable for the active plan, the reference sync will fall back to the curated registry and continue.
+- If the FMP profile endpoint is unavailable, the reference sync will fall back to the most recent cached profile or the curated registry and continue.

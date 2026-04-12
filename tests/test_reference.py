@@ -8,9 +8,9 @@ class FakeMarketService:
         self.settings = settings
 
     def load_universe(self):
-        from semicon_alpha.ingestion.eodhd import EODHDIngestionService
+        from semicon_alpha.ingestion.fmp import FMPIngestionService
 
-        return EODHDIngestionService(self.settings).load_universe()
+        return FMPIngestionService(self.settings).load_universe()
 
     def sync_exchange_symbols(self, exchange_codes):
         return []

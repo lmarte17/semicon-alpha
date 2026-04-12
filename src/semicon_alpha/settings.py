@@ -14,8 +14,9 @@ class Settings(BaseSettings):
     request_timeout_seconds: float = 30.0
     request_pause_seconds: float = 0.2
     user_agent: str = "semicon-alpha/0.1 (semiconductor ingestion engine)"
-    eodhd_base_url: str = "https://eodhd.com/api"
-    eodhd_api_key: str | None = Field(default=None, alias="EODHD_API_KEY")
+    fmp_base_url: str = "https://financialmodelingprep.com/stable"
+    fmp_api_key: str | None = Field(default=None, alias="FMP_API_KEY")
+    market_profile_refresh_days: int = 7
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -40,6 +41,10 @@ class Settings(BaseSettings):
         return self.data_dir / "reference"
 
     @property
+    def duckdb_path(self) -> Path:
+        return self.data_dir / "semicon_alpha.duckdb"
+
+    @property
     def outputs_dir(self) -> Path:
         return self.project_root / "outputs"
 
@@ -57,9 +62,9 @@ class Settings(BaseSettings):
         ):
             directory.mkdir(parents=True, exist_ok=True)
 
-    def require_eodhd_api_key(self) -> str:
-        if not self.eodhd_api_key:
+    def require_fmp_api_key(self) -> str:
+        if not self.fmp_api_key:
             raise RuntimeError(
-                "EODHD_API_KEY is not configured. Set it in the environment or .env."
+                "FMP_API_KEY is not configured. Set it in the environment or .env."
             )
-        return self.eodhd_api_key
+        return self.fmp_api_key

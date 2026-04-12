@@ -12,6 +12,7 @@ from dateutil import parser as date_parser
 
 from semicon_alpha.models.records import EnrichedArticleRecord
 from semicon_alpha.settings import Settings
+from semicon_alpha.storage import DuckDBCatalog
 from semicon_alpha.utils.http import build_http_client
 from semicon_alpha.utils.io import (
     normalize_whitespace,
@@ -30,6 +31,7 @@ class SourceEnrichmentService:
     def __init__(self, settings: Settings, client=None) -> None:
         self.settings = settings
         self.client = client or build_http_client(settings)
+        self.catalog = DuckDBCatalog(settings)
         self.discovered_article_path = settings.processed_dir / "news_articles_discovered.parquet"
         self.enriched_article_path = settings.processed_dir / "news_articles_enriched.parquet"
 
@@ -59,6 +61,7 @@ class SourceEnrichmentService:
             unique_keys=["article_id"],
             sort_by=["fetched_at_utc"],
         )
+        self.catalog.refresh_processed_views()
         return {"processed_count": len(records)}
 
     def enrich_article(self, article_id: str, source_url: str) -> EnrichedArticleRecord:
