@@ -4,6 +4,8 @@ This repository is the Phase 1 intelligence-engine foundation for the ZerveHack 
 
 The current build implements the full data-ingestion layer described in [zervehack_semiconductor_project_plan.md](./zervehack_semiconductor_project_plan.md), with decisions shaped by the longer-term analyst terminal in [PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md](./PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md).
 
+For the Zerve handoff, see [docs/ZERVE_SETUP.md](./docs/ZERVE_SETUP.md) and the notebook templates in [notebooks/](./notebooks/README.md).
+
 ## What Exists
 
 - Lithos snapshot ingestion for semiconductor news discovery
@@ -35,6 +37,12 @@ pip install -e ".[dev]"
 
 ```bash
 semicon-alpha news-snapshot
+```
+
+Optional: direct runtime data away from the repo and into a Zerve-friendly storage folder:
+
+```bash
+export SEMICON_ALPHA_STORAGE_ROOT=runtime
 ```
 
 4. Enrich the most recent discovered articles from their source pages:
@@ -75,3 +83,4 @@ semicon-alpha market-sync --start 2024-01-01
 - Lithos is treated as a discovery surface, not the final source of truth for `published_at`.
 - EODHD is used for price history and company fundamentals.
 - Relationship edges are intentionally config-driven so the graph layer remains explainable.
+- If the EODHD fundamentals endpoint is unavailable for the active plan, the reference sync will fall back to the curated registry and continue.

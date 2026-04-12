@@ -9,7 +9,8 @@ from semicon_alpha.utils.io import discover_project_root
 
 
 class Settings(BaseSettings):
-    project_root: Path = Field(default_factory=discover_project_root)
+    project_root: Path = Field(default_factory=lambda: discover_project_root(Path(__file__)))
+    storage_root: Path | None = Field(default=None, alias="SEMICON_ALPHA_STORAGE_ROOT")
     lithos_url: str = "https://lithosgraphein.com/"
     request_timeout_seconds: float = 30.0
     request_pause_seconds: float = 0.2
@@ -24,8 +25,15 @@ class Settings(BaseSettings):
     )
 
     @property
+    def runtime_root(self) -> Path:
+        root = self.storage_root or self.project_root
+        if not root.is_absolute():
+            root = (self.project_root / root).resolve()
+        return root
+
+    @property
     def data_dir(self) -> Path:
-        return self.project_root / "data"
+        return self.runtime_root / "data"
 
     @property
     def raw_dir(self) -> Path:
@@ -41,7 +49,7 @@ class Settings(BaseSettings):
 
     @property
     def outputs_dir(self) -> Path:
-        return self.project_root / "outputs"
+        return self.runtime_root / "outputs"
 
     @property
     def configs_dir(self) -> Path:

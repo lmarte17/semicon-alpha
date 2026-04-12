@@ -9,6 +9,7 @@ from semicon_alpha.ingestion.reference import ReferenceDataService
 from semicon_alpha.ingestion.source_enrichment import SourceEnrichmentService
 from semicon_alpha.settings import Settings
 from semicon_alpha.utils.logging import configure_logging
+from semicon_alpha.workflows.zerve import build_workspace_summary
 
 
 LOGGER = logging.getLogger(__name__)
@@ -36,6 +37,11 @@ def build_parser() -> argparse.ArgumentParser:
         "reference-sync", help="Build reference datasets and fetch company fundamentals"
     )
     reference_sync.add_argument("--skip-exchange-symbols", action="store_true")
+
+    subparsers.add_parser(
+        "workspace-summary",
+        help="Summarize processed datasets and runtime paths",
+    )
 
     ingest_all = subparsers.add_parser(
         "ingest-all", help="Run news, reference, and market ingestion together"
@@ -84,6 +90,19 @@ def main() -> None:
             result["relationship_count"],
             result["fundamental_count"],
         )
+        return
+
+    if args.command == "workspace-summary":
+        summary = build_workspace_summary(settings)
+        LOGGER.info("Runtime root: %s", summary["runtime_root"])
+        LOGGER.info("Processed datasets: %s", summary["dataset_count"])
+        for row in summary["datasets"]:
+            LOGGER.info(
+                "%s rows=%s modified=%s",
+                row["name"],
+                row["rows"],
+                row["modified_at"],
+            )
         return
 
     if args.command == "ingest-all":
