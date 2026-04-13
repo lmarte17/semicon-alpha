@@ -1,6 +1,6 @@
 # Semicon Alpha
 
-This repository is the Phase 1 intelligence-engine foundation for a semiconductor event propagation product.
+This repository now contains the Phase 1 intelligence engine plus the first Wave 1 analyst-terminal MVP for a semiconductor event propagation product.
 
 The current build implements the Phase 1 ingestion, Event Intelligence, Graph / Influence Modeling, Exposure Scoring, Lag Modeling, and Market Evaluation layers described in [zervehack_semiconductor_project_plan.md](./zervehack_semiconductor_project_plan.md), with decisions shaped by the longer-term analyst terminal in [PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md](./PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md).
 
@@ -14,6 +14,8 @@ The current build implements the Phase 1 ingestion, Event Intelligence, Graph / 
 - Lag prediction for event-company candidates using graph depth, metadata, and optional historical feedback
 - Ranked event impact scoring with structural, segment, lag, historical, and obviousness components
 - Market-reaction evaluation with benchmark-adjusted returns, realized lag windows, and summary KPIs
+- FastAPI-backed Wave 1 product API for dashboard, event, entity, graph, search, and copilot workflows
+- Browser-based intelligence terminal shell over the current world model and evidence datasets
 - FMP market-price and company-profile ingestion
 - Curated instrument-directory generation for exchange/ticker reference data
 - Curated ecosystem reference-data loaders for companies, themes, and relationships
@@ -105,6 +107,27 @@ semicon-alpha evaluate-sync --limit 20
 semicon-alpha db-sync
 ```
 
+14. Run the Wave 1 intelligence terminal locally:
+
+```bash
+semicon-alpha serve --host 127.0.0.1 --port 8000
+```
+
+Then open `http://127.0.0.1:8000/terminal`.
+
+## Wave 1 Terminal Surface
+
+Wave 1 is the first analyst workflow layer on top of the Phase 1 engine. It currently provides:
+
+- dashboard overview for recent events and non-obvious impacts
+- event workspaces with ranked impacts, propagation paths, themes, and evidence
+- entity workspaces with neighbors, linked events, and effect pathways
+- graph path tracing between nodes
+- lexical search across entities, events, themes, and documents
+- grounded copilot responses scoped to events or entities
+
+Current API routes are mounted under `/api`, and the browser shell is served at `/terminal`.
+
 ## Primary Datasets
 
 - `data/processed/lithos_snapshots.parquet`
@@ -145,6 +168,7 @@ semicon-alpha db-sync
 - Lag modeling starts with deterministic heuristics plus optional empirical feedback from earlier evaluated events; it is not a learned time-series model yet.
 - Exposure scoring is explainable and additive by design, with explicit structural, segment, historical, lag, and obviousness components.
 - Market evaluation currently uses trading-day windows versus a semiconductor benchmark ETF to compute realized returns, abnormal returns, lag buckets, and hit-rate KPIs.
+- Wave 1 is intentionally read-heavy and evidence-first; it is not yet the full Phase 2 system for watchlists, alerts, boards, scenarios, or collaborative workflows.
 - The `exchange_symbols` dataset is derived from the curated instrument universe plus cached profile metadata, so it does not consume additional API quota.
 - Profile syncs are cache-aware so normal daily workflows stay well under free-tier request caps.
 - DuckDB is the local analytical query layer on top of parquet, not a replacement for the raw or processed storage layers.

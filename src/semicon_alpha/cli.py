@@ -3,6 +3,9 @@ from __future__ import annotations
 import argparse
 import logging
 
+import uvicorn
+
+from semicon_alpha.api.main import create_app
 from semicon_alpha.evaluation import MarketEvaluationService
 from semicon_alpha.events import EventIntelligenceService
 from semicon_alpha.graph import GraphBuildService, GraphPropagationService
@@ -64,6 +67,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     evaluate_sync.add_argument("--limit", type=int, default=50)
     evaluate_sync.add_argument("--force", action="store_true")
+
+    serve = subparsers.add_parser("serve", help="Run the Wave 1 intelligence terminal locally")
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=8000)
+    serve.add_argument("--reload", action="store_true")
 
     market_sync = subparsers.add_parser(
         "market-sync", help="Fetch FMP daily price history for the curated universe"
@@ -178,6 +186,15 @@ def main() -> None:
             result["reaction_count"],
             result["event_count"],
             result["summary_count"],
+        )
+        return
+
+    if args.command == "serve":
+        uvicorn.run(
+            create_app(settings),
+            host=args.host,
+            port=args.port,
+            reload=args.reload,
         )
         return
 

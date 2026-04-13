@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Semicon Alpha Terminal</title>
+    <link rel="stylesheet" href="/terminal-static/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="left-rail">
+        <div class="brand-block">
+          <div class="eyebrow">Wave 1</div>
+          <h1>Semicon Alpha</h1>
+          <p>Analyst workflow MVP over the event-propagation engine.</p>
+        </div>
+        <form id="search-form" class="search-form">
+          <input id="search-input" type="text" placeholder="Search entities, events, documents..." />
+          <button type="submit">Search</button>
+        </form>
+        <div class="rail-section">
+          <div class="section-header">
+            <h2>Dashboard</h2>
+            <button id="dashboard-button" type="button">Open</button>
+          </div>
+          <div id="metric-list" class="metric-list"></div>
+        </div>
+        <div class="rail-section">
+          <div class="section-header">
+            <h2>Recent Events</h2>
+          </div>
+          <div id="event-list" class="list-stack"></div>
+        </div>
+        <div class="rail-section">
+          <div class="section-header">
+            <h2>Search Results</h2>
+          </div>
+          <div id="search-results" class="list-stack subdued">
+            <p>Use the search bar to find entities, events, themes, and documents.</p>
+          </div>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <div id="workspace-header" class="workspace-header"></div>
+        <div id="workspace-body" class="workspace-body"></div>
+      </main>
+
+      <aside class="context-panel">
+        <section class="context-card">
+          <div class="section-header">
+            <h2>Evidence</h2>
+          </div>
+          <div id="evidence-panel" class="panel-scroll">
+            <p>Select an event or entity to inspect evidence.</p>
+          </div>
+        </section>
+
+        <section class="context-card">
+          <div class="section-header">
+            <h2>Copilot</h2>
+          </div>
+          <form id="copilot-form" class="stack-form">
+            <textarea id="copilot-input" rows="4" placeholder="Ask a grounded question about the current event or entity..."></textarea>
+            <button type="submit">Run</button>
+          </form>
+          <div id="copilot-output" class="panel-scroll subdued">
+            <p>Copilot answers stay grounded in event, entity, path, and evidence data.</p>
+          </div>
+        </section>
+
+        <section class="context-card">
+          <div class="section-header">
+            <h2>Path Trace</h2>
+          </div>
+          <form id="path-form" class="stack-form">
+            <input id="path-source" type="text" placeholder="Source node id" />
+            <input id="path-target" type="text" placeholder="Target node id" />
+            <button type="submit">Trace Path</button>
+          </form>
+          <div id="path-output" class="panel-scroll subdued">
+            <p>Trace a path between graph nodes like <code>theme:ai_server_demand</code> and <code>company:TSM</code>.</p>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <script src="/terminal-static/app.js"></script>
+  </body>
+</html>
