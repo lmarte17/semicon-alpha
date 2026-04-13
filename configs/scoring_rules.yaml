@@ -1,0 +1,69 @@
+version: "2026-04-12.scoring-layer.v1"
+
+benchmark_ticker: SOXX
+
+lag_buckets:
+  same_day: 0
+  1d: 1
+  3d: 3
+  5d: 5
+  10d: 10
+
+exposure_weights:
+  direct: 1.0
+  second_order: 0.72
+  third_order: 0.55
+  lag_profile: 0.35
+  segment_primary_match: 0.18
+  segment_secondary_match: 0.12
+  segment_overlap: 0.08
+  history_ticker_event: 0.16
+  history_segment_event: 0.08
+  history_role_event: 0.06
+
+obviousness_penalties:
+  origin_company_base: 0.28
+  mentioned_company_base: 0.15
+  origin_name_candidate_base: 0.04
+  direct_exposure_multiplier: 0.25
+  mega_cap_bonus: 0.10
+  large_cap_bonus: 0.05
+
+lag_heuristics:
+  base_center: 0.80
+  direct_exposure_drag: 1.20
+  second_order_shift: 1.10
+  third_order_shift: 1.80
+  non_obvious_shift: 0.90
+  market_cap_shifts:
+    mega: -0.45
+    large: -0.15
+    mid: 0.30
+    small: 0.65
+  ecosystem_role_shifts:
+    equipment_vendor: 0.55
+    outsourced_assembly_test: 0.65
+    foundry: 0.40
+    memory_supplier: 0.25
+    fabless_designer: -0.20
+    idm_foundry: 0.10
+    analog_supplier: 0.25
+    mixed_signal_supplier: 0.30
+    power_management_supplier: 0.20
+    rf_supplier: 0.15
+  empirical_weights:
+    ticker_event_type: 0.55
+    segment_event_type: 0.30
+    role_event_type: 0.15
+
+evaluation:
+  minimum_move_threshold: 0.015
+  hit_thresholds:
+    same_day: 0.015
+    1d: 0.015
+    3d: 0.020
+    5d: 0.025
+    10d: 0.030
+  volume_lookback_days: 20
+  top_n_metrics: [3, 5]
+  non_obvious_direct_exposure_max: 0.22

@@ -3,11 +3,14 @@ from __future__ import annotations
 import argparse
 import logging
 
+from semicon_alpha.evaluation import MarketEvaluationService
 from semicon_alpha.events import EventIntelligenceService
+from semicon_alpha.graph import GraphBuildService, GraphPropagationService
 from semicon_alpha.ingestion.fmp import FMPIngestionService
 from semicon_alpha.ingestion.lithos import LithosIngestionService
 from semicon_alpha.ingestion.reference import ReferenceDataService
 from semicon_alpha.ingestion.source_enrichment import SourceEnrichmentService
+from semicon_alpha.scoring import ExposureScoringService, LagModelingService
 from semicon_alpha.settings import Settings
 from semicon_alpha.storage import DuckDBCatalog
 from semicon_alpha.utils.logging import configure_logging
@@ -33,6 +36,34 @@ def build_parser() -> argparse.ArgumentParser:
     )
     event_sync.add_argument("--limit", type=int, default=50)
     event_sync.add_argument("--force", action="store_true")
+
+    subparsers.add_parser(
+        "graph-sync", help="Build unified graph nodes and edges from reference datasets"
+    )
+
+    graph_propagate = subparsers.add_parser(
+        "graph-propagate", help="Generate event graph anchors and propagated influence outputs"
+    )
+    graph_propagate.add_argument("--limit", type=int, default=50)
+    graph_propagate.add_argument("--force", action="store_true")
+
+    lag_sync = subparsers.add_parser(
+        "lag-sync", help="Generate lag-model predictions for event-company impact candidates"
+    )
+    lag_sync.add_argument("--limit", type=int, default=50)
+    lag_sync.add_argument("--force", action="store_true")
+
+    score_sync = subparsers.add_parser(
+        "score-sync", help="Rank company impacts using graph influence, lag, and historical evaluation"
+    )
+    score_sync.add_argument("--limit", type=int, default=50)
+    score_sync.add_argument("--force", action="store_true")
+
+    evaluate_sync = subparsers.add_parser(
+        "evaluate-sync", help="Evaluate scored event impacts against realized market moves"
+    )
+    evaluate_sync.add_argument("--limit", type=int, default=50)
+    evaluate_sync.add_argument("--force", action="store_true")
 
     market_sync = subparsers.add_parser(
         "market-sync", help="Fetch FMP daily price history for the curated universe"
@@ -69,6 +100,11 @@ def main() -> None:
     lithos_service = LithosIngestionService(settings)
     enrichment_service = SourceEnrichmentService(settings)
     event_service = EventIntelligenceService(settings)
+    graph_build_service = GraphBuildService(settings)
+    graph_propagation_service = GraphPropagationService(settings)
+    lag_service = LagModelingService(settings)
+    scoring_service = ExposureScoringService(settings)
+    evaluation_service = MarketEvaluationService(settings)
     market_service = FMPIngestionService(settings)
     reference_service = ReferenceDataService(settings, market_service)
     catalog = DuckDBCatalog(settings)
@@ -91,6 +127,57 @@ def main() -> None:
             result["entity_count"],
             result["classification_count"],
             result["theme_count"],
+        )
+        return
+
+    if args.command == "graph-sync":
+        result = graph_build_service.run()
+        LOGGER.info(
+            "Built graph datasets with %s nodes and %s edges",
+            result["node_count"],
+            result["edge_count"],
+        )
+        return
+
+    if args.command == "graph-propagate":
+        result = graph_propagation_service.run(limit=args.limit, force=args.force)
+        LOGGER.info(
+            "Propagated %s events into %s anchors, %s paths, and %s node influence rows",
+            result["event_count"],
+            result["anchor_count"],
+            result["path_count"],
+            result["influence_count"],
+        )
+        return
+
+    if args.command == "lag-sync":
+        result = lag_service.run(limit=args.limit, force=args.force)
+        LOGGER.info(
+            "Generated %s lag predictions across %s events with %s empirical profiles",
+            result["prediction_count"],
+            result["event_count"],
+            result["profile_count"],
+        )
+        return
+
+    if args.command == "score-sync":
+        if args.force or not lag_service.predictions_path.exists():
+            lag_service.run(limit=args.limit, force=args.force)
+        result = scoring_service.run(limit=args.limit, force=args.force)
+        LOGGER.info(
+            "Scored %s event-company impacts across %s events",
+            result["score_count"],
+            result["event_count"],
+        )
+        return
+
+    if args.command == "evaluate-sync":
+        result = evaluation_service.run(limit=args.limit, force=args.force)
+        LOGGER.info(
+            "Evaluated %s scored impacts across %s events and refreshed %s summary metrics",
+            result["reaction_count"],
+            result["event_count"],
+            result["summary_count"],
         )
         return
 

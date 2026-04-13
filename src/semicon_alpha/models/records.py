@@ -166,6 +166,191 @@ class StructuredEventRecord(FlatRecordModel):
     processed_at_utc: datetime
 
 
+class GraphNodeRecord(FlatRecordModel):
+    node_id: str
+    node_type: str
+    label: str
+    description: str | None = None
+    source_table: str
+    ticker: str | None = None
+    segment_primary: str | None = None
+    metadata_json: dict[str, Any] | list[Any] | None = None
+    is_active: bool = True
+    created_at_utc: datetime
+
+
+class GraphEdgeRecord(FlatRecordModel):
+    edge_id: str
+    source_node_id: str
+    target_node_id: str
+    source_node_type: str
+    target_node_type: str
+    edge_type: str
+    weight: float
+    sign: str
+    confidence: float
+    evidence: str | None = None
+    evidence_url: str | None = None
+    last_updated: str
+    source_table: str
+    is_derived: bool = False
+
+
+class EventGraphAnchorRecord(FlatRecordModel):
+    event_id: str
+    anchor_node_id: str
+    anchor_node_type: str
+    anchor_role: str
+    anchor_score: float
+    anchor_direction: str
+    anchor_confidence: float
+    anchor_reason: str
+    processed_at_utc: datetime
+
+
+class EventPropagationPathRecord(FlatRecordModel):
+    event_id: str
+    target_node_id: str
+    target_node_type: str
+    hop_count: int
+    path_rank: int
+    path_nodes: list[str]
+    path_edges: list[str]
+    path_score: float
+    path_direction: str
+    path_confidence: float
+    reason_codes: list[str]
+    processed_at_utc: datetime
+
+
+class EventNodeInfluenceRecord(FlatRecordModel):
+    event_id: str
+    node_id: str
+    node_type: str
+    best_hop_count: int
+    path_count: int
+    direct_path_score: float
+    first_order_score: float
+    second_order_score: float
+    third_order_score: float
+    aggregate_influence_score: float
+    provisional_direction: str
+    confidence: float
+    top_paths: list[dict[str, Any]]
+    processed_at_utc: datetime
+
+
+class LagProfileRecord(FlatRecordModel):
+    scope_type: str
+    scope_key: str
+    event_type: str
+    sample_size: int
+    preferred_lag_bucket: str
+    lag_bucket_scores: dict[str, float]
+    mean_signed_abnormal_return: float
+    confidence: float
+    computed_at_utc: datetime
+
+
+class EventLagPredictionRecord(FlatRecordModel):
+    event_id: str
+    ticker: str
+    entity_id: str
+    event_type: str
+    impact_direction: str
+    market_cap_bucket: str | None = None
+    ecosystem_role: str | None = None
+    best_hop_count: int
+    heuristic_lag_center: float
+    predicted_lag_bucket: str
+    lag_bucket_scores: dict[str, float]
+    delayed_reaction_score: float
+    lag_confidence: float
+    empirical_support_count: int
+    lag_reason_codes: list[str]
+    reasoning: str
+    processed_at_utc: datetime
+
+
+class EventImpactScoreRecord(FlatRecordModel):
+    event_id: str
+    ticker: str
+    entity_id: str
+    event_type: str
+    published_at_utc: datetime | None = None
+    impact_direction: str
+    best_hop_count: int
+    direct_exposure_score: float
+    second_order_score: float
+    third_order_score: float
+    structural_exposure_score: float
+    segment_exposure_score: float
+    historical_similarity_score: float
+    delayed_reaction_score: float
+    obviousness_penalty: float
+    total_rank_score: float
+    confidence: float
+    predicted_lag_bucket: str
+    lag_confidence: float
+    historical_support_count: int
+    is_origin_company: bool
+    is_mentioned_company: bool
+    is_non_obvious: bool
+    market_cap_bucket: str | None = None
+    ecosystem_role: str | None = None
+    primary_segment: str | None = None
+    explanation: str
+    reason_codes: list[str]
+    top_paths: list[dict[str, Any]]
+    processed_at_utc: datetime
+
+
+class EventMarketReactionRecord(FlatRecordModel):
+    event_id: str
+    ticker: str
+    entity_id: str
+    event_type: str
+    event_published_at_utc: datetime | None = None
+    benchmark_ticker: str
+    predicted_direction: str
+    predicted_lag_bucket: str
+    total_rank_score: float
+    confidence: float
+    is_non_obvious: bool
+    market_cap_bucket: str | None = None
+    ecosystem_role: str | None = None
+    segment_primary: str | None = None
+    anchor_trade_date: date | None = None
+    realized_return_t0: float | None = None
+    realized_return_t1: float | None = None
+    realized_return_t3: float | None = None
+    realized_return_t5: float | None = None
+    realized_return_t10: float | None = None
+    abnormal_return_t0: float | None = None
+    abnormal_return_t1: float | None = None
+    abnormal_return_t3: float | None = None
+    abnormal_return_t5: float | None = None
+    abnormal_return_t10: float | None = None
+    abnormal_volume_t0: float | None = None
+    peak_abnormal_volume_t10: float | None = None
+    realized_direction: str | None = None
+    realized_lag_bucket: str | None = None
+    best_signed_abnormal_return: float | None = None
+    hit_flag: bool = False
+    rank_realized_move: int | None = None
+    evaluated_at_utc: datetime
+
+
+class EvaluationSummaryRecord(FlatRecordModel):
+    metric_name: str
+    metric_scope: str
+    group_key: str | None = None
+    top_n: int | None = None
+    metric_value: float
+    sample_size: int
+    computed_at_utc: datetime
+
+
 class UniverseCompanyConfig(FlatRecordModel):
     ticker: str
     eodhd_symbol: str

@@ -1,0 +1,120 @@
+version: "2026-04-12.graph-layer.v1"
+
+propagation:
+  max_depth: 3
+  beam_width: 12
+  top_paths_per_target: 3
+  min_path_score: 0.02
+  hop_decay:
+    1: 1.0
+    2: 0.65
+    3: 0.45
+
+edge_type_rules:
+  supplier_to:
+    forward_multiplier: 0.55
+    reverse_multiplier: 0.85
+    allows_reverse_traversal: true
+    forward_sign_mode: use_edge_sign
+    reverse_sign_mode: use_edge_sign
+    confidence_penalty: 0.95
+    max_depth_preference: 3
+
+  customer_of:
+    forward_multiplier: 0.85
+    reverse_multiplier: 0.55
+    allows_reverse_traversal: true
+    forward_sign_mode: use_edge_sign
+    reverse_sign_mode: use_edge_sign
+    confidence_penalty: 0.95
+    max_depth_preference: 3
+
+  competitor_to:
+    forward_multiplier: 0.45
+    reverse_multiplier: 0.45
+    allows_reverse_traversal: true
+    forward_sign_mode: invert
+    reverse_sign_mode: invert
+    confidence_penalty: 0.85
+    max_depth_preference: 2
+
+  dependent_on:
+    forward_multiplier: 0.8
+    reverse_multiplier: 0.95
+    allows_reverse_traversal: true
+    forward_sign_mode: use_edge_sign
+    reverse_sign_mode: use_edge_sign
+    confidence_penalty: 0.95
+    max_depth_preference: 3
+
+  benefits_from:
+    forward_multiplier: 0.4
+    reverse_multiplier: 0.95
+    allows_reverse_traversal: true
+    forward_sign_mode: use_edge_sign
+    reverse_sign_mode: use_edge_sign
+    confidence_penalty: 0.95
+    max_depth_preference: 3
+
+  constrained_by:
+    forward_multiplier: 0.85
+    reverse_multiplier: 0.65
+    allows_reverse_traversal: true
+    forward_sign_mode: use_edge_sign
+    reverse_sign_mode: use_edge_sign
+    confidence_penalty: 0.9
+    max_depth_preference: 3
+
+  exposed_to:
+    forward_multiplier: 0.6
+    reverse_multiplier: 0.85
+    allows_reverse_traversal: true
+    forward_sign_mode: use_edge_sign
+    reverse_sign_mode: use_edge_sign
+    confidence_penalty: 0.9
+    max_depth_preference: 3
+
+  substitutes_for:
+    forward_multiplier: 0.45
+    reverse_multiplier: 0.45
+    allows_reverse_traversal: true
+    forward_sign_mode: invert
+    reverse_sign_mode: invert
+    confidence_penalty: 0.85
+    max_depth_preference: 2
+
+  demand_flows_to:
+    forward_multiplier: 0.9
+    reverse_multiplier: 0.5
+    allows_reverse_traversal: true
+    forward_sign_mode: use_edge_sign
+    reverse_sign_mode: use_edge_sign
+    confidence_penalty: 0.95
+    max_depth_preference: 3
+
+  bottleneck_for:
+    forward_multiplier: 0.8
+    reverse_multiplier: 0.7
+    allows_reverse_traversal: true
+    forward_sign_mode: use_edge_sign
+    reverse_sign_mode: use_edge_sign
+    confidence_penalty: 0.9
+    max_depth_preference: 3
+
+  in_segment_primary:
+    forward_multiplier: 0.3
+    reverse_multiplier: 0.95
+    allows_reverse_traversal: true
+    forward_sign_mode: preserve
+    reverse_sign_mode: preserve
+    confidence_penalty: 1.0
+    max_depth_preference: 2
+
+  in_segment_secondary:
+    forward_multiplier: 0.25
+    reverse_multiplier: 0.8
+    allows_reverse_traversal: true
+    forward_sign_mode: preserve
+    reverse_sign_mode: preserve
+    confidence_penalty: 0.95
+    max_depth_preference: 2

@@ -2,13 +2,18 @@
 
 This repository is the Phase 1 intelligence-engine foundation for a semiconductor event propagation product.
 
-The current build implements the Phase 1 ingestion and Event Intelligence layers described in [zervehack_semiconductor_project_plan.md](./zervehack_semiconductor_project_plan.md), with decisions shaped by the longer-term analyst terminal in [PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md](./PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md).
+The current build implements the Phase 1 ingestion, Event Intelligence, Graph / Influence Modeling, Exposure Scoring, Lag Modeling, and Market Evaluation layers described in [zervehack_semiconductor_project_plan.md](./zervehack_semiconductor_project_plan.md), with decisions shaped by the longer-term analyst terminal in [PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md](./PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md).
 
 ## What Exists
 
 - Lithos snapshot ingestion for semiconductor news discovery
 - Source-article enrichment with metadata and body extraction
 - Event Intelligence conversion from enriched articles into structured semiconductor event records
+- Graph construction from company, theme, and derived segment nodes/edges
+- Event anchoring and deterministic first-/second-/third-order graph propagation outputs
+- Lag prediction for event-company candidates using graph depth, metadata, and optional historical feedback
+- Ranked event impact scoring with structural, segment, lag, historical, and obviousness components
+- Market-reaction evaluation with benchmark-adjusted returns, realized lag windows, and summary KPIs
 - FMP market-price and company-profile ingestion
 - Curated instrument-directory generation for exchange/ticker reference data
 - Curated ecosystem reference-data loaders for companies, themes, and relationships
@@ -21,7 +26,7 @@ The current build implements the Phase 1 ingestion and Event Intelligence layers
 Phase 2 requires stable entities, evidence links, document history, and inspectable intermediate datasets. The current Phase 1 build therefore stores:
 
 - immutable raw snapshots and source HTML
-- normalized discovery, enrichment, and event-intelligence tables
+- normalized discovery, enrichment, event-intelligence, graph-propagation, scoring, and evaluation tables
 - stable IDs for articles, companies, themes, and relationships
 - reference tables that can feed the future graph and terminal layers
 
@@ -58,13 +63,43 @@ semicon-alpha event-sync --limit 20
 semicon-alpha reference-sync
 ```
 
-7. Backfill prices for the curated universe and benchmarks:
+7. Build unified graph datasets:
+
+```bash
+semicon-alpha graph-sync
+```
+
+8. Generate event anchors and propagated graph influence outputs:
+
+```bash
+semicon-alpha graph-propagate --limit 20
+```
+
+9. Generate lag predictions for impacted companies:
+
+```bash
+semicon-alpha lag-sync --limit 20
+```
+
+10. Rank event-company impact candidates:
+
+```bash
+semicon-alpha score-sync --limit 20
+```
+
+11. Backfill prices for the curated universe and benchmarks:
 
 ```bash
 semicon-alpha market-sync --start 2024-01-01
 ```
 
-8. Refresh DuckDB views for the processed datasets:
+12. Evaluate predictions against realized market moves:
+
+```bash
+semicon-alpha evaluate-sync --limit 20
+```
+
+13. Refresh DuckDB views for the processed datasets:
 
 ```bash
 semicon-alpha db-sync
@@ -81,6 +116,16 @@ semicon-alpha db-sync
 - `data/processed/news_event_classifications.parquet`
 - `data/processed/news_event_themes.parquet`
 - `data/processed/news_events_structured.parquet`
+- `data/processed/graph_nodes.parquet`
+- `data/processed/graph_edges.parquet`
+- `data/processed/event_graph_anchors.parquet`
+- `data/processed/event_propagation_paths.parquet`
+- `data/processed/event_node_influence.parquet`
+- `data/processed/lag_profiles.parquet`
+- `data/processed/event_lag_predictions.parquet`
+- `data/processed/event_impact_scores.parquet`
+- `data/processed/event_market_reactions.parquet`
+- `data/processed/evaluation_summary.parquet`
 - `data/processed/company_registry.parquet`
 - `data/processed/company_relationships.parquet`
 - `data/processed/theme_nodes.parquet`
@@ -96,6 +141,10 @@ semicon-alpha db-sync
 - Lithos is treated as a discovery surface, not the final source of truth for `published_at`.
 - FMP is used for price history and company profiles.
 - Event Intelligence is deterministic and config-driven for the current MVP, with tracked-universe entity extraction and taxonomy-based event classification.
+- The graph layer is parquet-first: typed node/edge datasets are the source of truth, and propagation is deterministic and rule-driven.
+- Lag modeling starts with deterministic heuristics plus optional empirical feedback from earlier evaluated events; it is not a learned time-series model yet.
+- Exposure scoring is explainable and additive by design, with explicit structural, segment, historical, lag, and obviousness components.
+- Market evaluation currently uses trading-day windows versus a semiconductor benchmark ETF to compute realized returns, abnormal returns, lag buckets, and hit-rate KPIs.
 - The `exchange_symbols` dataset is derived from the curated instrument universe plus cached profile metadata, so it does not consume additional API quota.
 - Profile syncs are cache-aware so normal daily workflows stay well under free-tier request caps.
 - DuckDB is the local analytical query layer on top of parquet, not a replacement for the raw or processed storage layers.
