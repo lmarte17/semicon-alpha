@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from semicon_alpha.llm.workflows import AnalystSynthesisService
 from semicon_alpha.services.dashboard import DashboardService
 from semicon_alpha.services.entities import EntityWorkspaceService
 from semicon_alpha.services.events import EventWorkspaceService
@@ -10,11 +11,13 @@ from semicon_alpha.services.graph_view import GraphExplorerService
 from semicon_alpha.services.scenarios import ScenarioService
 from semicon_alpha.services.search import SearchService
 from semicon_alpha.services.theses import ThesisService
+from semicon_alpha.settings import Settings
 
 
 class CopilotService:
     def __init__(
         self,
+        settings: Settings,
         dashboard_service: DashboardService,
         entity_service: EntityWorkspaceService,
         event_service: EventWorkspaceService,
@@ -22,7 +25,9 @@ class CopilotService:
         search_service: SearchService,
         scenario_service: ScenarioService,
         thesis_service: ThesisService,
+        synthesis_service: AnalystSynthesisService | None = None,
     ) -> None:
+        self.settings = settings
         self.dashboard_service = dashboard_service
         self.entity_service = entity_service
         self.event_service = event_service
@@ -30,6 +35,7 @@ class CopilotService:
         self.search_service = search_service
         self.scenario_service = scenario_service
         self.thesis_service = thesis_service
+        self.synthesis_service = synthesis_service or AnalystSynthesisService(settings)
 
     def query(
         self,
@@ -41,23 +47,29 @@ class CopilotService:
     ) -> dict[str, Any]:
         lowered = query.lower().strip()
         if event_id:
-            return self._handle_event_scoped(query, lowered, event_id)
+            payload = self._handle_event_scoped(query, lowered, event_id)
+            return self._finalize_response(query, "event", event_id, payload)
         if entity_id:
-            return self._handle_entity_scoped(query, lowered, entity_id)
+            payload = self._handle_entity_scoped(query, lowered, entity_id)
+            return self._finalize_response(query, "entity", entity_id, payload)
         if scenario_id:
-            return self._handle_scenario_scoped(scenario_id)
+            payload = self._handle_scenario_scoped(scenario_id)
+            return self._finalize_response(query, "scenario", scenario_id, payload)
         if thesis_id:
-            return self._handle_thesis_scoped(thesis_id)
+            payload = self._handle_thesis_scoped(thesis_id)
+            return self._finalize_response(query, "thesis", thesis_id, payload)
 
         compare_match = re.search(r"compare\s+(.+?)\s+and\s+(.+)", lowered)
         if compare_match:
             entity_a = self._resolve_entity(compare_match.group(1))
             entity_b = self._resolve_entity(compare_match.group(2))
             if entity_a and entity_b:
-                return self._compare_entities(entity_a["id"], entity_b["id"])
+                payload = self._compare_entities(entity_a["id"], entity_b["id"])
+                return self._finalize_response(query, "entity_comparison", f"{entity_a['id']}|{entity_b['id']}", payload)
 
         if "what changed" in lowered or "this week" in lowered:
-            return self._weekly_summary()
+            payload = self._weekly_summary()
+            return self._finalize_response(query, "dashboard", "dashboard", payload)
 
         search_results = self.search_service.search(query, limit=5)
         answer = "No strong scoped interpretation was found. Returning the most relevant entities, events, and documents."
@@ -66,7 +78,7 @@ class CopilotService:
             f"{len(search_results['entities'])} entity matches",
             f"{len(search_results['documents'])} document matches",
         ]
-        return {
+        payload = {
             "answer": answer,
             "observations": observations,
             "inferences": [],
@@ -74,6 +86,33 @@ class CopilotService:
             "related_entities": search_results["entities"],
             "related_events": search_results["events"],
         }
+        return self._finalize_response(query, "global_search", None, payload)
+
+    def _finalize_response(
+        self,
+        query: str,
+        scope_type: str,
+        scope_id: str | None,
+        payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        deterministic_payload = {
+            "answer": payload.get("answer") or "",
+            "observations": payload.get("observations", []),
+            "inferences": payload.get("inferences", []),
+            "uncertainties": payload.get("uncertainties", []),
+            "next_checks": payload.get("next_checks", []),
+            "citations": payload.get("citations", []),
+            "related_entities": payload.get("related_entities", []),
+            "related_events": payload.get("related_events", []),
+        }
+        if not self.settings.llm_runtime_enabled:
+            return deterministic_payload
+        return self.synthesis_service.synthesize_copilot(
+            query_text=query,
+            scope_type=scope_type,
+            scope_id=scope_id,
+            deterministic_payload=deterministic_payload,
+        )
 
     def _handle_event_scoped(self, query: str, lowered: str, event_id: str) -> dict[str, Any]:
         workspace = self.event_service.get_event_workspace(event_id)
@@ -100,6 +139,8 @@ class CopilotService:
                     "answer": answer,
                     "observations": observations,
                     "inferences": inferences,
+                    "uncertainties": [],
+                    "next_checks": [f"Inspect the top retained paths for {target_ticker} and confirm source evidence."],
                     "citations": citations,
                     "related_entities": [target_entity],
                     "related_events": [{"id": event_id, "title": event["headline"]}],
@@ -122,6 +163,8 @@ class CopilotService:
             "answer": answer,
             "observations": observations,
             "inferences": inferences,
+            "uncertainties": [] if top_impacts else ["No strong ranked impact candidates are currently available."],
+            "next_checks": [f"Recheck the highest-ranked impacts for event {event_id} after more evidence arrives."],
             "citations": workspace["supporting_evidence"]["source_documents"],
             "related_entities": [
                 {"id": row["entity_id"], "title": row["ticker"], "type": "entity"} for row in top_impacts
@@ -154,6 +197,8 @@ class CopilotService:
             "answer": answer,
             "observations": observations,
             "inferences": [item for item in inferences if item],
+            "uncertainties": [] if workspace["effect_pathways"] else ["No effect pathways are currently retained for this entity."],
+            "next_checks": [f"Review the most recent linked events for {entity['label']}."],
             "citations": workspace["evidence"]["linked_events"][:3],
             "related_entities": [],
             "related_events": [
@@ -187,6 +232,8 @@ class CopilotService:
             "answer": answer,
             "observations": observations,
             "inferences": inferences,
+            "uncertainties": [f"{len(workspace['contradiction_signals'])} contradiction signals currently retained."],
+            "next_checks": ["Review contradiction signals and rerun the scenario after assumption changes."],
             "citations": [],
             "related_entities": [
                 {"id": row["entity_id"], "title": row["label"], "type": "entity"} for row in impacted[:5]
@@ -217,6 +264,8 @@ class CopilotService:
             "answer": answer,
             "observations": observations,
             "inferences": inferences,
+            "uncertainties": [f"{len(workspace['contradiction_signals'])} contradictory thesis signals currently retained."],
+            "next_checks": ["Review the newest thesis updates and compare support versus contradiction signals."],
             "citations": [],
             "related_entities": [],
             "related_events": [
@@ -248,6 +297,8 @@ class CopilotService:
             "answer": answer,
             "observations": observations,
             "inferences": inferences,
+            "uncertainties": [],
+            "next_checks": [f"Compare recent event flow for {left_entity['label']} and {right_entity['label']} directly."],
             "citations": [],
             "related_entities": [
                 {"id": entity_a_id, "title": left_entity["label"], "type": "entity"},
@@ -278,6 +329,8 @@ class CopilotService:
             "answer": answer,
             "observations": observations,
             "inferences": inferences,
+            "uncertainties": [],
+            "next_checks": ["Open the most relevant recent event and inspect its evidence bundle."],
             "citations": [],
             "related_entities": [],
             "related_events": [

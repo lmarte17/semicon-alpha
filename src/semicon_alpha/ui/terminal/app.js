@@ -1169,6 +1169,10 @@ async function runCopilot() {
       <ul>${payload.observations.map((item) => `<li>${item}</li>`).join("")}</ul>
       <strong>Inferences</strong>
       <ul>${payload.inferences.map((item) => `<li>${item}</li>`).join("")}</ul>
+      <strong>Uncertainties</strong>
+      <ul>${(payload.uncertainties || []).map((item) => `<li>${item}</li>`).join("") || "<li>None surfaced.</li>"}</ul>
+      <strong>Next Checks</strong>
+      <ul>${(payload.next_checks || []).map((item) => `<li>${item}</li>`).join("") || "<li>No immediate follow-up suggested.</li>"}</ul>
       <strong>Citations</strong>
       <ul>${citations.map((item) => `<li>${item.title || item.article_id || item.id || "Reference"}</li>`).join("")}</ul>
     </div>

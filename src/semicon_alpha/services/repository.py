@@ -32,6 +32,14 @@ class WorldModelRepository:
         return self._read_parquet("event_impact_scores.parquet")
 
     @cached_property
+    def copilot_llm_responses(self) -> pd.DataFrame:
+        return self._read_parquet("copilot_llm_responses.parquet")
+
+    @cached_property
+    def report_llm_generations(self) -> pd.DataFrame:
+        return self._read_parquet("report_llm_generations.parquet")
+
+    @cached_property
     def event_llm_reviews(self) -> pd.DataFrame:
         return self._read_parquet("event_llm_reviews.parquet")
 
@@ -142,6 +150,8 @@ class WorldModelRepository:
         for attribute in (
             "events",
             "event_scores",
+            "copilot_llm_responses",
+            "report_llm_generations",
             "event_llm_reviews",
             "event_llm_entities",
             "event_llm_themes",

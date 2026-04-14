@@ -80,6 +80,8 @@ class CopilotResponse(APIBaseModel):
     answer: str
     observations: list[str]
     inferences: list[str]
+    uncertainties: list[str] = Field(default_factory=list)
+    next_checks: list[str] = Field(default_factory=list)
     citations: list[dict[str, Any]]
     related_entities: list[dict[str, Any]]
     related_events: list[dict[str, Any]]

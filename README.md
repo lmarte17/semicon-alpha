@@ -1,6 +1,6 @@
 # Semicon Alpha
 
-This repository now contains the Phase 1 intelligence engine plus the first five terminal waves for a semiconductor event propagation product: Wave 1 analyst workflows, Wave 2 operational monitoring, Wave 3 historical research/reporting, Wave 4 scenario/thesis workflows, and Wave 5 ontology/infrastructure expansion. It also includes the first four LLM Intelligence waves: Gemini-backed platform foundations, article relevance triage, event review/fusion, and model-backed retrieval embeddings.
+This repository now contains the Phase 1 intelligence engine plus the first five terminal waves for a semiconductor event propagation product: Wave 1 analyst workflows, Wave 2 operational monitoring, Wave 3 historical research/reporting, Wave 4 scenario/thesis workflows, and Wave 5 ontology/infrastructure expansion. It also includes the first five LLM Intelligence waves: Gemini-backed platform foundations, article relevance triage, event review/fusion, model-backed retrieval embeddings, and grounded copilot/report synthesis.
 
 The current build implements the Phase 1 ingestion, Event Intelligence, Graph / Influence Modeling, Exposure Scoring, Lag Modeling, and Market Evaluation layers described in [zervehack_semiconductor_project_plan.md](./zervehack_semiconductor_project_plan.md), with decisions shaped by the longer-term analyst terminal in [PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md](./PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md).
 
@@ -10,7 +10,7 @@ The current build implements the Phase 1 ingestion, Event Intelligence, Graph / 
 - Source-article enrichment with metadata and body extraction
 - Event Intelligence conversion from enriched articles into structured semiconductor event records
 - Gemini-backed structured-output foundation for optional LLM intelligence workflows
-- LLM job logging, article relevance triage, and event review/fusion around Event Intelligence
+- LLM job logging, article relevance triage, event review/fusion, and grounded analyst-language synthesis
 - Graph construction from company, theme, ontology, and derived segment nodes/edges
 - Event anchoring and deterministic first-/second-/third-order graph propagation outputs
 - Lag prediction for event-company candidates using graph depth, metadata, and optional historical feedback
@@ -197,6 +197,7 @@ Current API routes are mounted under `/api`, and the browser shell is served at 
 - `data/processed/news_articles_enriched.parquet`
 - `data/processed/llm_job_runs.parquet`
 - `data/processed/article_llm_triage.parquet`
+- `data/processed/copilot_llm_responses.parquet`
 - `data/processed/event_llm_reviews.parquet`
 - `data/processed/event_llm_entities.parquet`
 - `data/processed/event_llm_themes.parquet`
@@ -224,6 +225,7 @@ Current API routes are mounted under `/api`, and the browser shell is served at 
 - `data/processed/theme_relationships.parquet`
 - `data/processed/ontology_nodes.parquet`
 - `data/processed/ontology_relationships.parquet`
+- `data/processed/report_llm_generations.parquet`
 - `data/processed/retrieval_embeddings.parquet`
 - `data/processed/retrieval_index.parquet`
 - `data/processed/market_prices_daily.parquet`
@@ -237,7 +239,7 @@ Current API routes are mounted under `/api`, and the browser shell is served at 
 - Lithos is treated as a discovery surface, not the final source of truth for `published_at`.
 - FMP is used for price history and company profiles.
 - Event Intelligence remains deterministic-first and config-driven, with tracked-universe entity extraction and taxonomy-based event classification as the baseline.
-- The current LLM intelligence layer is Gemini-backed and schema-bound. Wave 0 provides the shared client, routing, and audit log. Wave 1 adds article triage. Wave 2 adds event review/fusion sidecars with disagreement logging and deterministic fallback. Wave 3 upgrades retrieval to Gemini embeddings while retaining the local hashed-vector fallback.
+- The current LLM intelligence layer is Gemini-backed and schema-bound. Wave 0 provides the shared client, routing, and audit log. Wave 1 adds article triage. Wave 2 adds event review/fusion sidecars with disagreement logging and deterministic fallback. Wave 3 upgrades retrieval to Gemini embeddings while retaining the local hashed-vector fallback. Wave 4 adds single-shot grounded synthesis for copilot and reports over bounded deterministic evidence bundles.
 - The graph layer is parquet-first: typed node/edge datasets are the source of truth, and propagation is deterministic and rule-driven.
 - Wave 5 ontology expansion is still curated/config-driven rather than sourced from an external knowledge graph.
 - Graph history is snapshot-based and append-only; it is designed for inspection and product timelines, not high-frequency streaming updates.

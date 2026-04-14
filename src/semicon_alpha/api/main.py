@@ -85,6 +85,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         thesis_service=thesis_service,
     )
     copilot_service = CopilotService(
+        settings=settings,
         dashboard_service=dashboard_service,
         entity_service=entity_service,
         event_service=event_service,
@@ -96,8 +97,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(
         title="Semicon Alpha Terminal",
-        version="0.7.0-llm-wave3",
-        description="Wave 5 terminal with LLM-backed event review, Gemini retrieval embeddings, analyst workflows, scenarios, ontology expansion, graph history, and hybrid retrieval.",
+        version="0.8.0-llm-wave4",
+        description="Wave 5 terminal with LLM-backed event review, Gemini retrieval embeddings, grounded copilot/report synthesis, analyst workflows, scenarios, ontology expansion, graph history, and hybrid retrieval.",
     )
     app.state.settings = settings
     app.state.services = APIServices(

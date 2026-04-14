@@ -50,3 +50,32 @@ class EventReviewResponse(BaseModel):
     abstain: bool = False
     needs_review: bool = False
     review_notes: str | None = None
+
+
+class CopilotSynthesisResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    answer: str
+    observations: list[str] = Field(default_factory=list)
+    inferences: list[str] = Field(default_factory=list)
+    uncertainties: list[str] = Field(default_factory=list)
+    next_checks: list[str] = Field(default_factory=list)
+    citations_used: list[str] = Field(default_factory=list)
+    confidence: float = Field(ge=0.0, le=1.0)
+    abstain: bool = False
+    needs_review: bool = False
+
+
+class ReportSynthesisResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    summary: str
+    observations: list[str] = Field(default_factory=list)
+    inferences: list[str] = Field(default_factory=list)
+    uncertainties: list[str] = Field(default_factory=list)
+    next_checks: list[str] = Field(default_factory=list)
+    citations_used: list[str] = Field(default_factory=list)
+    markdown_body: str
+    confidence: float = Field(ge=0.0, le=1.0)
+    abstain: bool = False
+    needs_review: bool = False

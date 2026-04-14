@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from semicon_alpha.appstate import AppStateRepository
+from semicon_alpha.llm.workflows import AnalystSynthesisService
 from semicon_alpha.services.boards import BoardService
 from semicon_alpha.services.dashboard import DashboardService
 from semicon_alpha.services.entities import EntityWorkspaceService
@@ -26,6 +27,7 @@ class ReportService:
         research_service: ResearchService,
         scenario_service: ScenarioService,
         thesis_service: ThesisService,
+        synthesis_service: AnalystSynthesisService | None = None,
     ) -> None:
         self.settings = settings
         self.appstate = appstate
@@ -36,6 +38,7 @@ class ReportService:
         self.research_service = research_service
         self.scenario_service = scenario_service
         self.thesis_service = thesis_service
+        self.synthesis_service = synthesis_service or AnalystSynthesisService(settings)
 
     def list_reports(self, limit: int = 50) -> list[dict[str, Any]]:
         return self.appstate.list_reports(limit=limit)
@@ -79,6 +82,29 @@ class ReportService:
         else:
             raise KeyError(f"Unsupported report type: {report_type}")
 
+        if self.settings.llm_runtime_enabled:
+            synthesis = self.synthesis_service.synthesize_report(
+                report_type=report_type,
+                title=payload["title"],
+                scope_type=payload.get("scope_type"),
+                scope_id=payload.get("scope_id"),
+                deterministic_payload=payload,
+            )
+            payload["summary"] = synthesis.summary
+            payload["markdown"] = synthesis.markdown
+            payload["citations"] = synthesis.citations
+            payload["llm_synthesis"] = {
+                "observations": synthesis.payload["observations"],
+                "inferences": synthesis.payload["inferences"],
+                "uncertainties": synthesis.payload["uncertainties"],
+                "next_checks": synthesis.payload["next_checks"],
+                "synthesis_status": synthesis.record_fields["synthesis_status"],
+                "model_name": synthesis.record_fields["model_name"],
+                "confidence": synthesis.record_fields["confidence"],
+            }
+        else:
+            synthesis = None
+
         report = self.appstate.create_report(
             report_type=report_type,
             title=payload["title"],
@@ -89,6 +115,11 @@ class ReportService:
             payload=payload,
             markdown=payload["markdown"],
         )
+        if synthesis is not None:
+            self.synthesis_service.persist_report_generation(
+                report_id=report["report_id"],
+                result=synthesis,
+            )
         self._export_markdown(report)
         return report
 

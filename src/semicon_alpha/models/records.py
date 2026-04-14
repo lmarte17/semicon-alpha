@@ -143,6 +143,29 @@ class ArticleLLMTriageRecord(FlatRecordModel):
     processed_at_utc: datetime
 
 
+class CopilotLLMResponseRecord(FlatRecordModel):
+    response_id: str
+    query_text: str
+    scope_type: str
+    scope_id: str | None = None
+    answer: str
+    observations: list[str]
+    inferences: list[str]
+    uncertainties: list[str]
+    next_checks: list[str]
+    citations_used: list[str]
+    related_entity_ids: list[str]
+    related_event_ids: list[str]
+    confidence: float
+    abstain: bool
+    needs_review: bool
+    synthesis_status: str
+    model_name: str
+    prompt_version: str
+    schema_version: str
+    created_at_utc: datetime
+
+
 class EventLLMReviewRecord(FlatRecordModel):
     event_id: str
     article_id: str
@@ -418,6 +441,29 @@ class RetrievalEmbeddingRecord(FlatRecordModel):
     text_sha256: str
     embedding_vector: list[float]
     updated_at_utc: datetime
+
+
+class ReportLLMGenerationRecord(FlatRecordModel):
+    generation_id: str
+    report_id: str
+    report_type: str
+    title: str
+    scope_type: str | None = None
+    scope_id: str | None = None
+    summary: str
+    observations: list[str]
+    inferences: list[str]
+    uncertainties: list[str]
+    next_checks: list[str]
+    citations_used: list[str]
+    confidence: float
+    abstain: bool
+    needs_review: bool
+    synthesis_status: str
+    model_name: str
+    prompt_version: str
+    schema_version: str
+    created_at_utc: datetime
 
 
 class EventGraphAnchorRecord(FlatRecordModel):
