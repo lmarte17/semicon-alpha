@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class FlatRecordModel(BaseModel):
@@ -143,6 +143,86 @@ class ArticleLLMTriageRecord(FlatRecordModel):
     processed_at_utc: datetime
 
 
+class EventLLMReviewRecord(FlatRecordModel):
+    event_id: str
+    article_id: str
+    deterministic_event_type: str
+    llm_event_type: str | None = None
+    deterministic_direction: str
+    llm_direction: str | None = None
+    deterministic_severity: str
+    llm_severity: str | None = None
+    llm_summary: str | None = None
+    llm_reasoning_summary: str
+    confidence: float
+    abstain: bool
+    needs_review: bool
+    disagreement_flags: list[str]
+    evidence_spans: list[str]
+    uncertainty_flags: list[str]
+    time_horizon_hint: str | None = None
+    model_name: str
+    prompt_version: str
+    schema_version: str
+    processed_at_utc: datetime
+
+
+class EventLLMEntityRecord(FlatRecordModel):
+    review_item_id: str
+    event_id: str
+    article_id: str
+    entity_id: str | None = None
+    entity_name: str
+    entity_type: str
+    role_label: str
+    evidence_snippets: list[str]
+    confidence: float
+    model_name: str
+    prompt_version: str
+    schema_version: str
+    processed_at_utc: datetime
+
+
+class EventLLMThemeRecord(FlatRecordModel):
+    review_item_id: str
+    event_id: str
+    article_id: str
+    theme_id: str | None = None
+    theme_name: str
+    role_label: str
+    evidence_snippets: list[str]
+    confidence: float
+    model_name: str
+    prompt_version: str
+    schema_version: str
+    processed_at_utc: datetime
+
+
+class EventLLMFusionDecisionRecord(FlatRecordModel):
+    event_id: str
+    article_id: str
+    deterministic_event_type: str
+    llm_event_type: str | None = None
+    final_event_type: str
+    deterministic_direction: str
+    llm_direction: str | None = None
+    final_direction: str
+    deterministic_severity: str
+    llm_severity: str | None = None
+    final_severity: str
+    decision: str
+    extraction_method: str
+    llm_review_status: str
+    disagreement_flags: list[str]
+    deterministic_confidence: float
+    llm_confidence: float
+    review_notes: str | None = None
+    model_name: str
+    prompt_version: str
+    schema_version: str
+    processed_at_utc: datetime
+
+
 class EventEntityMentionRecord(FlatRecordModel):
     event_id: str
     article_id: str
@@ -210,6 +290,11 @@ class StructuredEventRecord(FlatRecordModel):
     confidence: float
     reasoning: str
     market_relevance_score: float
+    extraction_method: str = "deterministic"
+    llm_review_status: str | None = None
+    evidence_spans: list[str] = Field(default_factory=list)
+    uncertainty_flags: list[str] = Field(default_factory=list)
+    review_notes: str | None = None
     processed_at_utc: datetime
 
 
@@ -313,7 +398,25 @@ class RetrievalIndexRecord(FlatRecordModel):
     aliases: list[str]
     lexical_terms: list[str]
     embedding_vector: list[float]
+    embedding_model: str | None = None
+    embedding_version: str | None = None
+    chunk_count: int = 1
     metadata_json: dict[str, Any] | list[Any] | None = None
+    updated_at_utc: datetime
+
+
+class RetrievalEmbeddingRecord(FlatRecordModel):
+    embedding_id: str
+    item_id: str
+    item_type: str
+    search_category: str
+    chunk_id: str
+    chunk_rank: int
+    embedding_model: str
+    embedding_version: str
+    semantic_text: str
+    text_sha256: str
+    embedding_vector: list[float]
     updated_at_utc: datetime
 
 

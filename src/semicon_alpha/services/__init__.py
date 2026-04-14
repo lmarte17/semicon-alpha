@@ -1,37 +1,34 @@
-from semicon_alpha.services.alerts import AlertService
-from semicon_alpha.services.boards import BoardService
-from semicon_alpha.services.copilot import CopilotService
-from semicon_alpha.services.dashboard import DashboardService
-from semicon_alpha.services.entities import EntityWorkspaceService
-from semicon_alpha.services.events import EventWorkspaceService
-from semicon_alpha.services.evidence import EvidenceService
-from semicon_alpha.services.graph_view import GraphExplorerService
-from semicon_alpha.services.notes import NotesService
-from semicon_alpha.services.queries import SavedQueryService
-from semicon_alpha.services.reports import ReportService
-from semicon_alpha.services.research import ResearchService
-from semicon_alpha.services.repository import WorldModelRepository
-from semicon_alpha.services.scenarios import ScenarioService
-from semicon_alpha.services.search import SearchService
-from semicon_alpha.services.theses import ThesisService
-from semicon_alpha.services.watchlists import WatchlistService
+from __future__ import annotations
 
-__all__ = [
-    "AlertService",
-    "BoardService",
-    "CopilotService",
-    "DashboardService",
-    "EntityWorkspaceService",
-    "EventWorkspaceService",
-    "EvidenceService",
-    "GraphExplorerService",
-    "NotesService",
-    "ReportService",
-    "ResearchService",
-    "ScenarioService",
-    "SavedQueryService",
-    "SearchService",
-    "ThesisService",
-    "WatchlistService",
-    "WorldModelRepository",
-]
+from importlib import import_module
+
+
+_EXPORTS = {
+    "AlertService": "semicon_alpha.services.alerts",
+    "BoardService": "semicon_alpha.services.boards",
+    "CopilotService": "semicon_alpha.services.copilot",
+    "DashboardService": "semicon_alpha.services.dashboard",
+    "EntityWorkspaceService": "semicon_alpha.services.entities",
+    "EventWorkspaceService": "semicon_alpha.services.events",
+    "EvidenceService": "semicon_alpha.services.evidence",
+    "GraphExplorerService": "semicon_alpha.services.graph_view",
+    "NotesService": "semicon_alpha.services.notes",
+    "ReportService": "semicon_alpha.services.reports",
+    "ResearchService": "semicon_alpha.services.research",
+    "ScenarioService": "semicon_alpha.services.scenarios",
+    "SavedQueryService": "semicon_alpha.services.queries",
+    "SearchService": "semicon_alpha.services.search",
+    "ThesisService": "semicon_alpha.services.theses",
+    "WatchlistService": "semicon_alpha.services.watchlists",
+    "WorldModelRepository": "semicon_alpha.services.repository",
+}
+
+__all__ = list(_EXPORTS)
+
+
+def __getattr__(name: str):
+    module_name = _EXPORTS.get(name)
+    if module_name is None:
+        raise AttributeError(name)
+    module = import_module(module_name)
+    return getattr(module, name)

@@ -25,12 +25,18 @@ def _build_test_settings(tmp_path: Path, **overrides) -> Settings:
     configs_dir = project_root / "configs"
     configs_dir.mkdir(parents=True, exist_ok=True)
     for config_name in (
+        "benchmarks.yaml",
         "event_taxonomy.yaml",
+        "graph_schema.yaml",
+        "ontology_nodes.yaml",
         "relationship_edges.yaml",
+        "scoring_rules.yaml",
         "theme_nodes.yaml",
         "universe.yaml",
     ):
         shutil.copy(REPO_ROOT / "configs" / config_name, configs_dir / config_name)
+    if "LLM_ENABLED" not in overrides:
+        overrides["LLM_ENABLED"] = bool(overrides.get("GEMINI_API_KEY"))
     settings = Settings(project_root=project_root, **overrides)
     settings.ensure_directories()
     return settings

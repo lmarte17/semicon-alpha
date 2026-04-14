@@ -32,6 +32,22 @@ class WorldModelRepository:
         return self._read_parquet("event_impact_scores.parquet")
 
     @cached_property
+    def event_llm_reviews(self) -> pd.DataFrame:
+        return self._read_parquet("event_llm_reviews.parquet")
+
+    @cached_property
+    def event_llm_entities(self) -> pd.DataFrame:
+        return self._read_parquet("event_llm_entities.parquet")
+
+    @cached_property
+    def event_llm_themes(self) -> pd.DataFrame:
+        return self._read_parquet("event_llm_themes.parquet")
+
+    @cached_property
+    def event_llm_fusion_decisions(self) -> pd.DataFrame:
+        return self._read_parquet("event_llm_fusion_decisions.parquet")
+
+    @cached_property
     def event_reactions(self) -> pd.DataFrame:
         return self._read_parquet("event_market_reactions.parquet")
 
@@ -115,6 +131,10 @@ class WorldModelRepository:
     def retrieval_index(self) -> pd.DataFrame:
         return self._read_parquet("retrieval_index.parquet")
 
+    @cached_property
+    def retrieval_embeddings(self) -> pd.DataFrame:
+        return self._read_parquet("retrieval_embeddings.parquet")
+
     def invalidate(self) -> None:
         for attribute in list(vars(self)):
             if attribute.startswith("_"):
@@ -122,6 +142,10 @@ class WorldModelRepository:
         for attribute in (
             "events",
             "event_scores",
+            "event_llm_reviews",
+            "event_llm_entities",
+            "event_llm_themes",
+            "event_llm_fusion_decisions",
             "event_reactions",
             "event_themes",
             "event_classifications",
@@ -143,6 +167,7 @@ class WorldModelRepository:
             "lag_predictions",
             "evaluation_summary",
             "retrieval_index",
+            "retrieval_embeddings",
         ):
             self.__dict__.pop(attribute, None)
 

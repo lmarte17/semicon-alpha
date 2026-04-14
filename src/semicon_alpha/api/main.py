@@ -55,7 +55,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     appstate = AppStateRepository(settings)
     evidence_service = EvidenceService(repo)
     graph_service = GraphExplorerService(settings, repo)
-    search_service = SearchService(repo)
+    search_service = SearchService(repo, settings)
     dashboard_service = DashboardService(repo)
     event_service = EventWorkspaceService(repo, evidence_service)
     entity_service = EntityWorkspaceService(repo, graph_service, evidence_service)
@@ -96,8 +96,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(
         title="Semicon Alpha Terminal",
-        version="0.6.0-wave5",
-        description="Wave 5 terminal with analyst workflows, scenarios, ontology expansion, graph history, and hybrid retrieval.",
+        version="0.7.0-llm-wave3",
+        description="Wave 5 terminal with LLM-backed event review, Gemini retrieval embeddings, analyst workflows, scenarios, ontology expansion, graph history, and hybrid retrieval.",
     )
     app.state.settings = settings
     app.state.services = APIServices(

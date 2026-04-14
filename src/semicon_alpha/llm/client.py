@@ -28,6 +28,15 @@ class StructuredGenerationResult:
     completed_at_utc: datetime
 
 
+@dataclass
+class EmbeddingResult:
+    embedding_vector: list[float]
+    model_name: str
+    raw_response: dict[str, Any]
+    started_at_utc: datetime
+    completed_at_utc: datetime
+
+
 class GeminiClient:
     def __init__(
         self,
@@ -98,6 +107,50 @@ class GeminiClient:
             raw_text=raw_text,
             raw_response=response_json,
             usage_metadata=usage_metadata,
+            started_at_utc=started_at,
+            completed_at_utc=completed_at,
+        )
+
+    def embed_text(
+        self,
+        *,
+        text: str,
+        model_name: str | None = None,
+        task_type: str = "RETRIEVAL_DOCUMENT",
+        output_dimensionality: int | None = None,
+    ) -> EmbeddingResult:
+        api_key = self.settings.require_gemini_api_key()
+        resolved_model_name = model_name or self.settings.gemini_embedding_model
+        started_at = now_utc()
+        payload = {
+            "model": f"models/{resolved_model_name}",
+            "content": {
+                "parts": [
+                    {
+                        "text": text,
+                    }
+                ]
+            },
+            "taskType": task_type,
+        }
+        if output_dimensionality is not None:
+            payload["outputDimensionality"] = output_dimensionality
+
+        url = f"{self.settings.gemini_base_url}/models/{resolved_model_name}:embedContent"
+        response_json = self._post_json(
+            url=url,
+            payload=payload,
+            api_key=api_key,
+        )
+        embedding_payload = response_json.get("embedding") or {}
+        values = embedding_payload.get("values") or []
+        if not isinstance(values, list) or not values:
+            raise RuntimeError("Gemini embedding response did not contain embedding values.")
+        completed_at = now_utc()
+        return EmbeddingResult(
+            embedding_vector=[float(value) for value in values],
+            model_name=resolved_model_name,
+            raw_response=response_json,
             started_at_utc=started_at,
             completed_at_utc=completed_at,
         )

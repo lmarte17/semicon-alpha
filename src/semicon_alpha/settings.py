@@ -28,8 +28,17 @@ class Settings(BaseSettings):
         default="gemini-3.1-pro-preview",
         alias="GEMINI_PRO_MODEL",
     )
+    gemini_embedding_model: str = Field(
+        default="gemini-embedding-001",
+        alias="GEMINI_EMBEDDING_MODEL",
+    )
     gemini_timeout_seconds: float = 45.0
     llm_article_triage_min_confidence: float = 0.7
+    llm_event_review_min_confidence: float = 0.72
+    llm_event_review_override_confidence: float = 0.84
+    gemini_embedding_output_dimensionality: int = 256
+    llm_retrieval_chunk_chars: int = 1800
+    llm_retrieval_chunk_overlap_chars: int = 250
 
     model_config = SettingsConfigDict(
         env_file=".env",

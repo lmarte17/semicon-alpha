@@ -9,12 +9,16 @@ from semicon_alpha.retrieval.index import (
     parse_embedding,
     tokenize_for_retrieval,
 )
+from semicon_alpha.llm.workflows import GeminiEmbeddingService
 from semicon_alpha.services.repository import WorldModelRepository
+from semicon_alpha.settings import Settings
 
 
 class SearchService:
-    def __init__(self, repo: WorldModelRepository) -> None:
+    def __init__(self, repo: WorldModelRepository, settings: Settings) -> None:
         self.repo = repo
+        self.settings = settings
+        self.embedding_service = GeminiEmbeddingService(settings)
 
     def search(self, query: str, limit: int = 8) -> dict[str, list[dict[str, Any]]]:
         needle = query.lower().strip()
@@ -45,11 +49,11 @@ class SearchService:
         query_terms = tokenize_for_retrieval(query)
         if not query_terms:
             return []
-        query_vector = embed_terms(query_terms)
         frame = self.repo.retrieval_index
         frame = frame.loc[frame["search_category"] == category]
         if frame.empty:
             return []
+        query_vector = self._query_embedding(query, query_terms, frame)
 
         scored = []
         needle = query.lower().strip()
@@ -83,6 +87,22 @@ class SearchService:
             )
         scored.sort(key=lambda item: item["score"], reverse=True)
         return scored[:limit]
+
+    def _query_embedding(
+        self,
+        query: str,
+        query_terms: list[str],
+        frame,
+    ) -> list[float]:
+        has_model_embeddings = "embedding_model" in frame.columns and frame["embedding_model"].notna().any()
+        if has_model_embeddings and self.settings.llm_runtime_enabled:
+            try:
+                vector = self.embedding_service.embed_query(query)
+                if vector:
+                    return vector
+            except Exception:
+                pass
+        return embed_terms(query_terms)
 
     def _search_entities(self, needle: str, limit: int) -> list[dict[str, Any]]:
         nodes = self.repo.graph_nodes.copy()

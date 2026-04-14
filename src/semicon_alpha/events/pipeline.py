@@ -9,10 +9,14 @@ from urllib.parse import urlparse
 import pandas as pd
 
 from semicon_alpha.events.taxonomy import EventTaxonomy, EventTypeRule, load_event_taxonomy
-from semicon_alpha.llm.workflows import ArticleTriageService
+from semicon_alpha.llm.workflows import ArticleTriageService, EventReviewService
 from semicon_alpha.models.records import (
     EventClassificationRecord,
     EventEntityMentionRecord,
+    EventLLMEntityRecord,
+    EventLLMFusionDecisionRecord,
+    EventLLMReviewRecord,
+    EventLLMThemeRecord,
     EventThemeMappingRecord,
     RelationshipEdgeRecord,
     StructuredEventRecord,
@@ -231,6 +235,10 @@ class ArticleAnalysis:
     entity_records: list[EventEntityMentionRecord]
     classification_records: list[EventClassificationRecord]
     theme_records: list[EventThemeMappingRecord]
+    llm_review_record: EventLLMReviewRecord | None = None
+    llm_entity_records: list[EventLLMEntityRecord] = field(default_factory=list)
+    llm_theme_records: list[EventLLMThemeRecord] = field(default_factory=list)
+    llm_fusion_record: EventLLMFusionDecisionRecord | None = None
 
 
 class EventIntelligenceService:
@@ -243,8 +251,13 @@ class EventIntelligenceService:
         self.event_classification_path = settings.processed_dir / "news_event_classifications.parquet"
         self.event_theme_path = settings.processed_dir / "news_event_themes.parquet"
         self.event_path = settings.processed_dir / "news_events_structured.parquet"
+        self.event_llm_review_path = settings.processed_dir / "event_llm_reviews.parquet"
+        self.event_llm_entity_path = settings.processed_dir / "event_llm_entities.parquet"
+        self.event_llm_theme_path = settings.processed_dir / "event_llm_themes.parquet"
+        self.event_llm_fusion_path = settings.processed_dir / "event_llm_fusion_decisions.parquet"
         self.taxonomy_path = settings.configs_dir / "event_taxonomy.yaml"
         self.article_triage_service = ArticleTriageService(settings)
+        self.event_review_service = EventReviewService(settings)
 
     def run(self, limit: int | None = None, force: bool = False) -> dict[str, int]:
         if not self.enriched_article_path.exists():
@@ -256,6 +269,8 @@ class EventIntelligenceService:
                 "theme_count": 0,
                 "triage_count": 0,
                 "triage_filtered_count": 0,
+                "llm_review_count": 0,
+                "llm_fusion_count": 0,
             }
 
         enriched = pd.read_parquet(self.enriched_article_path)
@@ -268,6 +283,8 @@ class EventIntelligenceService:
                 "theme_count": 0,
                 "triage_count": 0,
                 "triage_filtered_count": 0,
+                "llm_review_count": 0,
+                "llm_fusion_count": 0,
             }
 
         candidates = self._prepare_candidate_frame(enriched)
@@ -306,6 +323,8 @@ class EventIntelligenceService:
                 "theme_count": 0,
                 "triage_count": len(triage_result),
                 "triage_filtered_count": triage_filtered_count,
+                "llm_review_count": 0,
+                "llm_fusion_count": 0,
             }
 
         taxonomy = load_event_taxonomy(self.taxonomy_path)
@@ -317,6 +336,10 @@ class EventIntelligenceService:
         entity_records: list[EventEntityMentionRecord] = []
         classification_records: list[EventClassificationRecord] = []
         theme_records: list[EventThemeMappingRecord] = []
+        llm_review_records: list[EventLLMReviewRecord] = []
+        llm_entity_records: list[EventLLMEntityRecord] = []
+        llm_theme_records: list[EventLLMThemeRecord] = []
+        llm_fusion_records: list[EventLLMFusionDecisionRecord] = []
 
         for row in candidates.to_dict(orient="records"):
             analysis = self._analyze_article(
@@ -330,6 +353,12 @@ class EventIntelligenceService:
             entity_records.extend(analysis.entity_records)
             classification_records.extend(analysis.classification_records)
             theme_records.extend(analysis.theme_records)
+            if analysis.llm_review_record is not None:
+                llm_review_records.append(analysis.llm_review_record)
+            llm_entity_records.extend(analysis.llm_entity_records)
+            llm_theme_records.extend(analysis.llm_theme_records)
+            if analysis.llm_fusion_record is not None:
+                llm_fusion_records.append(analysis.llm_fusion_record)
 
         upsert_parquet(
             self.event_path,
@@ -355,6 +384,34 @@ class EventIntelligenceService:
             unique_keys=["event_id", "theme_id"],
             sort_by=["processed_at_utc"],
         )
+        if llm_review_records:
+            upsert_parquet(
+                self.event_llm_review_path,
+                llm_review_records,
+                unique_keys=["event_id"],
+                sort_by=["processed_at_utc"],
+            )
+        if llm_entity_records:
+            upsert_parquet(
+                self.event_llm_entity_path,
+                llm_entity_records,
+                unique_keys=["review_item_id"],
+                sort_by=["processed_at_utc"],
+            )
+        if llm_theme_records:
+            upsert_parquet(
+                self.event_llm_theme_path,
+                llm_theme_records,
+                unique_keys=["review_item_id"],
+                sort_by=["processed_at_utc"],
+            )
+        if llm_fusion_records:
+            upsert_parquet(
+                self.event_llm_fusion_path,
+                llm_fusion_records,
+                unique_keys=["event_id"],
+                sort_by=["processed_at_utc"],
+            )
         self.catalog.refresh_processed_views()
         return {
             "processed_count": len(event_records),
@@ -364,6 +421,8 @@ class EventIntelligenceService:
             "theme_count": len(theme_records),
             "triage_count": len(triage_result),
             "triage_filtered_count": triage_filtered_count,
+            "llm_review_count": len(llm_review_records),
+            "llm_fusion_count": len(llm_fusion_records),
         }
 
     def _apply_triage_filter(
@@ -471,6 +530,7 @@ class EventIntelligenceService:
             company_theme_edges=company_theme_edges,
         )
         primary_themes = [theme.theme_name for theme in themes if theme.is_primary]
+        primary_theme_ids = [theme.theme_id for theme in themes if theme.is_primary]
         primary_segment, secondary_segments = self._derive_segments(mentions, selected_classification)
         confidence = self._estimate_confidence(
             selected_classification=selected_classification,
@@ -506,6 +566,89 @@ class EventIntelligenceService:
         for candidate in classifications:
             candidate.confidence = confidence if candidate.is_selected else max(0.05, confidence - 0.2)
 
+        llm_review = None
+        if self.settings.llm_runtime_enabled:
+            deterministic_snapshot = {
+                "event_type": selected_classification.rule.event_type,
+                "direction": direction,
+                "severity": severity,
+                "confidence": round(confidence, 4),
+                "summary": summary,
+                "reasoning": reasoning,
+                "origin_companies": [mention.company.ticker for mention in selected_origins],
+                "mentioned_companies": [mention.company.ticker for mention in mentions],
+                "primary_segment": primary_segment,
+                "secondary_segments": secondary_segments,
+                "primary_themes": primary_themes,
+                "primary_theme_ids": primary_theme_ids,
+            }
+            classification_candidates = [
+                {
+                    "event_type": candidate.rule.event_type,
+                    "score": round(candidate.score, 4),
+                    "matched_keywords": candidate.matched_keywords[:6],
+                }
+                for candidate in classifications
+            ]
+            llm_review = self.event_review_service.review(
+                event_id=event_id,
+                article={
+                    "article_id": article.article_id,
+                    "headline": article.headline,
+                    "source": article.source,
+                    "source_url": article.source_url,
+                    "published_at_utc": article.published_at_utc.isoformat() if article.published_at_utc else None,
+                    "description": _coerce_optional_str(row.get("description")),
+                    "excerpt": _coerce_optional_str(row.get("excerpt")),
+                    "body_text": _coerce_optional_str(row.get("body_text")),
+                },
+                deterministic=deterministic_snapshot,
+                classification_candidates=classification_candidates,
+                tracked_companies={company.ticker: company.company_name for company in companies},
+                theme_names=theme_names,
+            )
+
+        final_origin_companies = [mention.company.ticker for mention in selected_origins]
+        final_mentioned_companies = [mention.company.ticker for mention in mentions]
+        final_primary_segment = primary_segment
+        final_secondary_segments = secondary_segments
+        final_primary_theme_ids = primary_theme_ids
+        final_primary_themes = primary_themes
+        final_event_type = selected_classification.rule.event_type
+        final_direction = direction
+        final_severity = severity
+        final_summary = summary
+        final_reasoning = reasoning
+        final_confidence = round(confidence, 4)
+        extraction_method = "deterministic"
+        llm_review_status: str | None = None
+        evidence_spans: list[str] = []
+        uncertainty_flags: list[str] = []
+        review_notes: str | None = None
+
+        if llm_review is not None:
+            final_origin_companies = llm_review.final_origin_companies or final_origin_companies
+            final_mentioned_companies = llm_review.final_mentioned_companies or final_mentioned_companies
+            final_primary_segment = llm_review.final_primary_segment or final_primary_segment
+            final_secondary_segments = llm_review.final_secondary_segments or final_secondary_segments
+            final_primary_theme_ids = llm_review.final_primary_theme_ids or final_primary_theme_ids
+            final_primary_themes = [
+                theme_names.get(theme_id, theme_id.removeprefix("theme:").replace("_", " "))
+                for theme_id in final_primary_theme_ids
+            ] or final_primary_themes
+            final_event_type = llm_review.final_event_type or final_event_type
+            final_direction = llm_review.final_direction or final_direction
+            final_severity = llm_review.final_severity or final_severity
+            final_summary = llm_review.final_summary or final_summary
+            final_reasoning = llm_review.final_reasoning or final_reasoning
+            extraction_method = llm_review.extraction_method
+            llm_review_status = llm_review.llm_review_status
+            evidence_spans = llm_review.evidence_spans
+            uncertainty_flags = llm_review.uncertainty_flags
+            review_notes = llm_review.review_notes
+            if llm_review.llm_review_status in {"reviewed", "disagreement", "override_applied"}:
+                final_confidence = round(max(confidence, llm_review.review_record.confidence), 4)
+
         event_record = StructuredEventRecord(
             event_id=event_id,
             article_id=article.article_id,
@@ -515,18 +658,23 @@ class EventIntelligenceService:
             source_url=article.source_url,
             canonical_url=article.canonical_url,
             published_at_utc=article.published_at_utc,
-            summary=summary,
-            origin_companies=[mention.company.ticker for mention in selected_origins],
-            mentioned_companies=[mention.company.ticker for mention in mentions],
-            primary_segment=primary_segment,
-            secondary_segments=secondary_segments,
-            primary_themes=primary_themes,
-            event_type=selected_classification.rule.event_type,
-            direction=direction,
-            severity=severity,
-            confidence=round(confidence, 4),
-            reasoning=reasoning,
+            summary=final_summary,
+            origin_companies=final_origin_companies,
+            mentioned_companies=final_mentioned_companies,
+            primary_segment=final_primary_segment,
+            secondary_segments=final_secondary_segments,
+            primary_themes=final_primary_themes,
+            event_type=final_event_type,
+            direction=final_direction,
+            severity=final_severity,
+            confidence=final_confidence,
+            reasoning=final_reasoning,
             market_relevance_score=round(market_relevance_score, 4),
+            extraction_method=extraction_method,
+            llm_review_status=llm_review_status,
+            evidence_spans=evidence_spans,
+            uncertainty_flags=uncertainty_flags,
+            review_notes=review_notes,
             processed_at_utc=processed_at,
         )
 
@@ -548,6 +696,16 @@ class EventIntelligenceService:
             )
             for mention in mentions
         ]
+        entity_records = self._merge_entity_records_with_llm(
+            event_id=event_id,
+            article_id=article.article_id,
+            entity_records=entity_records,
+            final_origin_companies=final_origin_companies,
+            final_mentioned_companies=final_mentioned_companies,
+            llm_review=llm_review,
+            companies=companies,
+            processed_at=processed_at,
+        )
 
         classification_records = [
             EventClassificationRecord(
@@ -584,12 +742,116 @@ class EventIntelligenceService:
             )
             for theme in themes
         ]
+        theme_records = self._merge_theme_records_with_llm(
+            event_id=event_id,
+            article_id=article.article_id,
+            theme_records=theme_records,
+            final_primary_theme_ids=final_primary_theme_ids,
+            theme_names=theme_names,
+            llm_review=llm_review,
+            processed_at=processed_at,
+        )
 
         return ArticleAnalysis(
             event_record=event_record,
             entity_records=entity_records,
             classification_records=classification_records,
             theme_records=theme_records,
+            llm_review_record=None if llm_review is None else llm_review.review_record,
+            llm_entity_records=[] if llm_review is None else llm_review.entity_records,
+            llm_theme_records=[] if llm_review is None else llm_review.theme_records,
+            llm_fusion_record=None if llm_review is None else llm_review.fusion_record,
+        )
+
+    def _merge_entity_records_with_llm(
+        self,
+        *,
+        event_id: str,
+        article_id: str,
+        entity_records: list[EventEntityMentionRecord],
+        final_origin_companies: list[str],
+        final_mentioned_companies: list[str],
+        llm_review,
+        companies: list[CompanyContext],
+        processed_at,
+    ) -> list[EventEntityMentionRecord]:
+        company_map = {company.ticker: company for company in companies}
+        records_by_ticker = {record.ticker: record for record in entity_records}
+        mentioned_set = set(final_mentioned_companies)
+        for ticker, record in list(records_by_ticker.items()):
+            if ticker in final_origin_companies and not record.is_origin_company:
+                records_by_ticker[ticker] = EventEntityMentionRecord(
+                    **{
+                        **record.model_dump(mode="python"),
+                        "is_origin_company": True,
+                    }
+                )
+        for ticker in mentioned_set:
+            if ticker in records_by_ticker:
+                continue
+            company = company_map.get(ticker)
+            if company is None:
+                continue
+            records_by_ticker[ticker] = EventEntityMentionRecord(
+                event_id=event_id,
+                article_id=article_id,
+                entity_id=company.entity_id,
+                ticker=company.ticker,
+                company_name=company.company_name,
+                matched_aliases=[],
+                title_aliases=[],
+                body_aliases=[],
+                title_mentions=0,
+                body_mentions=0,
+                match_score=0.0 if llm_review is None else round(llm_review.review_record.confidence, 4),
+                is_origin_company=ticker in final_origin_companies,
+                processed_at_utc=processed_at,
+            )
+        records = list(records_by_ticker.values())
+        records.sort(key=lambda item: (-item.match_score, item.ticker))
+        return records
+
+    def _merge_theme_records_with_llm(
+        self,
+        *,
+        event_id: str,
+        article_id: str,
+        theme_records: list[EventThemeMappingRecord],
+        final_primary_theme_ids: list[str],
+        theme_names: dict[str, str],
+        llm_review,
+        processed_at,
+    ) -> list[EventThemeMappingRecord]:
+        records_by_theme = {record.theme_id: record for record in theme_records}
+        review_confidence = 0.0 if llm_review is None else llm_review.review_record.confidence
+        for theme_id in final_primary_theme_ids:
+            existing = records_by_theme.get(theme_id)
+            if existing is not None:
+                mapping_sources = sorted(set(existing.mapping_sources) | {"llm_review"})
+                records_by_theme[theme_id] = EventThemeMappingRecord(
+                    **{
+                        **existing.model_dump(mode="python"),
+                        "mapping_sources": mapping_sources,
+                        "is_primary": True,
+                        "match_score": round(max(existing.match_score, review_confidence), 4),
+                    }
+                )
+                continue
+            records_by_theme[theme_id] = EventThemeMappingRecord(
+                event_id=event_id,
+                article_id=article_id,
+                theme_id=theme_id,
+                theme_name=theme_names.get(theme_id, theme_id),
+                mapping_sources=["llm_review"],
+                matched_keywords=[],
+                related_tickers=[],
+                match_score=round(review_confidence, 4),
+                is_primary=True,
+                processed_at_utc=processed_at,
+            )
+        return sorted(
+            records_by_theme.values(),
+            key=lambda item: (-item.match_score, item.theme_id),
         )
 
     def _build_article_context(self, row: dict[str, object]) -> ArticleContext:

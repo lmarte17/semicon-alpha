@@ -25,7 +25,7 @@ def _build_test_settings(tmp_path: Path) -> Settings:
         "universe.yaml",
     ):
         shutil.copy(REPO_ROOT / "configs" / config_name, configs_dir / config_name)
-    settings = Settings(project_root=project_root)
+    settings = Settings(project_root=project_root, LLM_ENABLED=False)
     settings.ensure_directories()
     return settings
 

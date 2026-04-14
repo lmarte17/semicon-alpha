@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
+from semicon_alpha.retrieval.index import cosine_similarity, parse_embedding
 from semicon_alpha.services.events import EventWorkspaceService
 from semicon_alpha.services.helpers import has_columns, parse_json_value
 from semicon_alpha.services.operational_support import top_event_impacts
@@ -18,6 +19,7 @@ class ResearchService:
         current = self._event_row(event_id)
         current_theme_ids = set(self._theme_ids(event_id))
         current_impacts = {impact["ticker"] for impact in top_event_impacts(self.repo, event_id, limit=5)}
+        current_embedding = self._event_embedding(event_id)
         analogs: list[dict[str, Any]] = []
         for row in self.repo.events.to_dict(orient="records"):
             other_id = str(row["event_id"])
@@ -49,6 +51,12 @@ class ResearchService:
             if shared_impacts:
                 score += min(1.5, 0.5 * len(shared_impacts))
                 reasons.append(f"shared impacted companies: {', '.join(shared_impacts[:3])}")
+
+            other_embedding = self._event_embedding(other_id)
+            semantic_score = cosine_similarity(current_embedding, other_embedding)
+            if semantic_score > 0:
+                score += min(2.5, semantic_score * 2.5)
+                reasons.append(f"semantic match: {round(semantic_score, 2)}")
 
             if score <= 0:
                 continue
@@ -147,3 +155,14 @@ class ResearchService:
             if best_row is None
             else best_row.get("best_signed_abnormal_return"),
         }
+
+    def _event_embedding(self, event_id: str) -> list[float]:
+        if not has_columns(self.repo.retrieval_index, "item_id", "search_category", "embedding_vector"):
+            return []
+        match = self.repo.retrieval_index.loc[
+            (self.repo.retrieval_index["item_id"] == event_id)
+            & (self.repo.retrieval_index["search_category"] == "events")
+        ]
+        if match.empty:
+            return []
+        return parse_embedding(match.iloc[0].get("embedding_vector"))

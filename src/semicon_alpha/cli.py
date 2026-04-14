@@ -169,11 +169,13 @@ def main() -> None:
     if args.command == "event-sync":
         result = event_service.run(limit=args.limit, force=args.force)
         LOGGER.info(
-            "Structured %s events with %s entity mentions, %s classifications, %s theme mappings, and filtered %s articles via triage",
+            "Structured %s events with %s entity mentions, %s classifications, %s theme mappings, %s LLM reviews, %s fusion decisions, and filtered %s articles via triage",
             result["event_count"],
             result["entity_count"],
             result["classification_count"],
             result["theme_count"],
+            result["llm_review_count"],
+            result["llm_fusion_count"],
             result["triage_filtered_count"],
         )
         return
@@ -190,7 +192,11 @@ def main() -> None:
 
     if args.command == "retrieval-sync":
         result = retrieval_service.run()
-        LOGGER.info("Built retrieval index with %s records", result["record_count"])
+        LOGGER.info(
+            "Built retrieval index with %s records and %s embedding rows",
+            result["record_count"],
+            result["embedding_count"],
+        )
         return
 
     if args.command == "graph-propagate":
