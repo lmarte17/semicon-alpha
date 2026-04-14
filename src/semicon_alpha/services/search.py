@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+import json
 from typing import Any
 
-from semicon_alpha.services.helpers import clean_record
+from semicon_alpha.retrieval.index import (
+    cosine_similarity,
+    embed_terms,
+    parse_embedding,
+    tokenize_for_retrieval,
+)
 from semicon_alpha.services.repository import WorldModelRepository
 
 
@@ -15,12 +21,68 @@ class SearchService:
         if not needle:
             return {"entities": [], "events": [], "documents": [], "themes": []}
 
+        if not self.repo.retrieval_index.empty:
+            return {
+                "entities": self._search_index_category(query, "entities", limit),
+                "events": self._search_index_category(query, "events", limit),
+                "documents": self._search_index_category(query, "documents", limit),
+                "themes": self._search_index_category(query, "themes", limit),
+            }
+
         return {
             "entities": self._search_entities(needle, limit),
             "events": self._search_events(needle, limit),
             "documents": self._search_documents(needle, limit),
             "themes": self._search_themes(needle, limit),
         }
+
+    def _search_index_category(
+        self,
+        query: str,
+        category: str,
+        limit: int,
+    ) -> list[dict[str, Any]]:
+        query_terms = tokenize_for_retrieval(query)
+        if not query_terms:
+            return []
+        query_vector = embed_terms(query_terms)
+        frame = self.repo.retrieval_index
+        frame = frame.loc[frame["search_category"] == category]
+        if frame.empty:
+            return []
+
+        scored = []
+        needle = query.lower().strip()
+        for row in frame.to_dict(orient="records"):
+            title = str(row.get("title") or "")
+            subtitle = row.get("subtitle")
+            semantic_text = str(row.get("semantic_text") or "")
+            aliases = _parse_list(row.get("aliases"))
+            lexical_terms = set(_parse_list(row.get("lexical_terms")))
+            matched_terms = lexical_terms.intersection(query_terms)
+            lexical_score = len(matched_terms) / max(len(query_terms), 1)
+            if needle in title.lower():
+                lexical_score += 0.8
+            elif needle in semantic_text.lower():
+                lexical_score += 0.45
+            elif aliases and any(needle in alias.lower() for alias in aliases):
+                lexical_score += 0.55
+            vector_score = cosine_similarity(query_vector, parse_embedding(row.get("embedding_vector")))
+            score = (0.58 * vector_score) + (0.42 * min(lexical_score, 1.5))
+            if score <= 0.08:
+                continue
+            scored.append(
+                {
+                    "id": row["item_id"],
+                    "type": _result_type_for_category(category),
+                    "title": title,
+                    "subtitle": subtitle,
+                    "url": row.get("url"),
+                    "score": round(score, 4),
+                }
+            )
+        scored.sort(key=lambda item: item["score"], reverse=True)
+        return scored[:limit]
 
     def _search_entities(self, needle: str, limit: int) -> list[dict[str, Any]]:
         nodes = self.repo.graph_nodes.copy()
@@ -29,7 +91,12 @@ class SearchService:
         label_match = nodes["label"].fillna("").str.lower().str.contains(needle)
         type_match = nodes["node_type"].fillna("").str.lower().str.contains(needle)
         ticker_match = nodes["ticker"].fillna("").str.lower().str.contains(needle) if "ticker" in nodes.columns else False
-        frame = nodes[label_match | type_match | ticker_match].head(limit)
+        description_match = (
+            nodes["description"].fillna("").str.lower().str.contains(needle)
+            if "description" in nodes.columns
+            else False
+        )
+        frame = nodes[label_match | type_match | ticker_match | description_match].head(limit)
         return [
             {
                 "id": row["node_id"],
@@ -101,3 +168,32 @@ class SearchService:
             }
             for row in frame.to_dict(orient="records")
         ]
+
+
+def _parse_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(item) for item in value]
+    if isinstance(value, str):
+        stripped = value.strip()
+        if not stripped:
+            return []
+        if stripped.startswith("["):
+            try:
+                parsed = json.loads(stripped)
+            except Exception:  # pragma: no cover - defensive
+                parsed = []
+            return [str(item) for item in parsed] if isinstance(parsed, list) else []
+        return [stripped]
+    return [str(value)]
+
+
+def _result_type_for_category(category: str) -> str:
+    if category == "entities":
+        return "entity"
+    if category == "events":
+        return "event"
+    if category == "documents":
+        return "document"
+    return "theme"

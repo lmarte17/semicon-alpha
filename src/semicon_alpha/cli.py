@@ -13,6 +13,7 @@ from semicon_alpha.ingestion.fmp import FMPIngestionService
 from semicon_alpha.ingestion.lithos import LithosIngestionService
 from semicon_alpha.ingestion.reference import ReferenceDataService
 from semicon_alpha.ingestion.source_enrichment import SourceEnrichmentService
+from semicon_alpha.retrieval import RetrievalIndexService
 from semicon_alpha.scoring import ExposureScoringService, LagModelingService
 from semicon_alpha.settings import Settings
 from semicon_alpha.storage import DuckDBCatalog
@@ -42,6 +43,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser(
         "graph-sync", help="Build unified graph nodes and edges from reference datasets"
+    )
+
+    subparsers.add_parser(
+        "retrieval-sync", help="Build the hybrid retrieval index for terminal search"
     )
 
     graph_propagate = subparsers.add_parser(
@@ -110,6 +115,7 @@ def main() -> None:
     event_service = EventIntelligenceService(settings)
     graph_build_service = GraphBuildService(settings)
     graph_propagation_service = GraphPropagationService(settings)
+    retrieval_service = RetrievalIndexService(settings)
     lag_service = LagModelingService(settings)
     scoring_service = ExposureScoringService(settings)
     evaluation_service = MarketEvaluationService(settings)
@@ -141,10 +147,16 @@ def main() -> None:
     if args.command == "graph-sync":
         result = graph_build_service.run()
         LOGGER.info(
-            "Built graph datasets with %s nodes and %s edges",
+            "Built graph datasets with %s nodes, %s edges, and %s graph changes",
             result["node_count"],
             result["edge_count"],
+            result["change_count"],
         )
+        return
+
+    if args.command == "retrieval-sync":
+        result = retrieval_service.run()
+        LOGGER.info("Built retrieval index with %s records", result["record_count"])
         return
 
     if args.command == "graph-propagate":
@@ -206,9 +218,10 @@ def main() -> None:
     if args.command == "reference-sync":
         result = reference_service.sync_reference_data(skip_exchange_symbols=args.skip_exchange_symbols)
         LOGGER.info(
-            "Reference sync complete with %s companies, %s themes, %s relationships, %s fundamentals",
+            "Reference sync complete with %s companies, %s themes, %s ontology nodes, %s relationships, %s fundamentals",
             result["company_count"],
             result["theme_count"],
+            result["ontology_node_count"],
             result["relationship_count"],
             result["fundamental_count"],
         )

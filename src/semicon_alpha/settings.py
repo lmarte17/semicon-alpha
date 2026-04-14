@@ -45,6 +45,10 @@ class Settings(BaseSettings):
         return self.data_dir / "semicon_alpha.duckdb"
 
     @property
+    def appstate_path(self) -> Path:
+        return self.data_dir / "app_state.sqlite"
+
+    @property
     def outputs_dir(self) -> Path:
         return self.project_root / "outputs"
 

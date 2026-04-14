@@ -34,7 +34,12 @@ class EvidenceService:
         }
 
     def get_relation_evidence(self, relation_id: str) -> dict[str, Any] | None:
-        frames = [self.repo.company_relationships, self.repo.theme_relationships, self.repo.graph_edges]
+        frames = [
+            self.repo.company_relationships,
+            self.repo.theme_relationships,
+            self.repo.ontology_relationships,
+            self.repo.graph_edges,
+        ]
         for frame in frames:
             if frame.empty or "edge_id" not in frame.columns:
                 continue
@@ -51,6 +56,9 @@ class EvidenceService:
                 "edge_type": row.get("edge_type"),
                 "source_id": row.get("source_id") or row.get("source_node_id"),
                 "target_id": row.get("target_id") or row.get("target_node_id"),
+                "effective_start": row.get("effective_start"),
+                "effective_end": row.get("effective_end"),
+                "relationship_status": row.get("relationship_status"),
             }
         return None
 
@@ -63,25 +71,13 @@ class EvidenceService:
         return evidence_rows
 
     def get_entity_evidence(self, entity_id: str, limit: int = 6) -> dict[str, Any]:
-        ticker = entity_id.split(":", 1)[1] if ":" in entity_id else entity_id
-        scores = self.repo.event_scores
-        linked_scores = scores.loc[scores["ticker"] == ticker].sort_values("published_at_utc", ascending=False)
-        linked_events = []
-        for row in linked_scores.head(limit).to_dict(orient="records"):
-            linked_events.append(
-                {
-                    "event_id": row["event_id"],
-                    "headline": self._event_row_value(row["event_id"], "headline"),
-                    "explanation": row.get("explanation"),
-                    "top_paths": parse_json_value(row.get("top_paths"), []),
-                }
-            )
-
-        relation_rows = []
+        linked_events = self._linked_entity_events(entity_id, limit=limit)
         graph_edges = self.repo.graph_edges
         match = graph_edges.loc[
             (graph_edges["source_node_id"] == entity_id) | (graph_edges["target_node_id"] == entity_id)
         ].sort_values(["confidence", "weight"], ascending=[False, False])
+
+        relation_rows = []
         for row in match.head(limit).to_dict(orient="records"):
             relation_rows.append(
                 {
@@ -91,9 +87,54 @@ class EvidenceService:
                     "evidence": row.get("evidence"),
                     "confidence": row.get("confidence"),
                     "weight": row.get("weight"),
+                    "effective_start": row.get("effective_start"),
+                    "effective_end": row.get("effective_end"),
+                    "relationship_status": row.get("relationship_status"),
                 }
             )
         return {"linked_events": linked_events, "relationship_evidence": relation_rows}
+
+    def _linked_entity_events(self, entity_id: str, limit: int) -> list[dict[str, Any]]:
+        ticker = entity_id.split(":", 1)[1] if ":" in entity_id else entity_id
+        linked_events = []
+        scores = self.repo.event_scores
+        if has_columns(scores, "entity_id"):
+            linked_scores = scores.loc[scores["entity_id"] == entity_id].sort_values("published_at_utc", ascending=False)
+            for row in linked_scores.head(limit).to_dict(orient="records"):
+                linked_events.append(
+                    {
+                        "event_id": row["event_id"],
+                        "headline": self._event_row_value(row["event_id"], "headline"),
+                        "explanation": row.get("explanation"),
+                        "top_paths": parse_json_value(row.get("top_paths"), []),
+                    }
+                )
+        elif ticker:
+            linked_scores = scores.loc[scores["ticker"] == ticker].sort_values("published_at_utc", ascending=False)
+            for row in linked_scores.head(limit).to_dict(orient="records"):
+                linked_events.append(
+                    {
+                        "event_id": row["event_id"],
+                        "headline": self._event_row_value(row["event_id"], "headline"),
+                        "explanation": row.get("explanation"),
+                        "top_paths": parse_json_value(row.get("top_paths"), []),
+                    }
+                )
+
+        if not linked_events and has_columns(self.repo.event_influences, "node_id"):
+            influences = self.repo.event_influences.loc[
+                self.repo.event_influences["node_id"] == entity_id
+            ].sort_values("aggregate_influence_score", ascending=False)
+            for row in influences.head(limit).to_dict(orient="records"):
+                linked_events.append(
+                    {
+                        "event_id": row["event_id"],
+                        "headline": self._event_row_value(row["event_id"], "headline"),
+                        "explanation": f"Retained as a graph-influence node with score {row.get('aggregate_influence_score')}.",
+                        "top_paths": parse_json_value(row.get("top_paths"), []),
+                    }
+                )
+        return linked_events
 
     def _get_event_row(self, event_id: str) -> dict[str, Any]:
         match = self.repo.events.loc[self.repo.events["event_id"] == event_id]

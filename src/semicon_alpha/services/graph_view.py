@@ -183,6 +183,7 @@ class GraphExplorerService:
             "edge_type": edge.edge_type,
             "other_node_id": other_node_id,
             "other_node_label": self._node_label(other_node_id),
+            "other_node_type": self.node_map.get(other_node_id, {}).get("node_type"),
             "weight": round(edge.weight, 4),
             "confidence": round(edge.confidence, 4),
             "traversal": "reverse" if edge.reverse else "forward",

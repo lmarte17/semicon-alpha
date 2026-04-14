@@ -111,13 +111,19 @@ body::before {
   flex-direction: column;
 }
 
+.compact-form {
+  gap: 8px;
+}
+
 input,
+select,
 textarea,
 button {
   font: inherit;
 }
 
 input,
+select,
 textarea {
   width: 100%;
   border: 1px solid rgba(215, 168, 110, 0.18);
@@ -162,6 +168,16 @@ button:hover {
   gap: 10px;
 }
 
+.ontology-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ontology-button {
+  padding: 9px 10px;
+}
+
 .metric-card,
 .list-card,
 .note-card,
@@ -175,6 +191,11 @@ button:hover {
   background: var(--panel-strong);
   border-radius: 14px;
   padding: 12px;
+}
+
+.empty-state {
+  color: var(--muted);
+  font-style: italic;
 }
 
 .metric-card strong,

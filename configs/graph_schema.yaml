@@ -101,6 +101,78 @@ edge_type_rules:
     confidence_penalty: 0.9
     max_depth_preference: 3
 
+  located_in:
+    forward_multiplier: 0.35
+    reverse_multiplier: 0.8
+    allows_reverse_traversal: true
+    forward_sign_mode: preserve
+    reverse_sign_mode: preserve
+    confidence_penalty: 1.0
+    max_depth_preference: 2
+
+  owns_facility:
+    forward_multiplier: 0.7
+    reverse_multiplier: 0.85
+    allows_reverse_traversal: true
+    forward_sign_mode: preserve
+    reverse_sign_mode: preserve
+    confidence_penalty: 0.95
+    max_depth_preference: 3
+
+  uses_technology:
+    forward_multiplier: 0.75
+    reverse_multiplier: 0.7
+    allows_reverse_traversal: true
+    forward_sign_mode: preserve
+    reverse_sign_mode: preserve
+    confidence_penalty: 0.92
+    max_depth_preference: 3
+
+  produces_material:
+    forward_multiplier: 0.7
+    reverse_multiplier: 0.82
+    allows_reverse_traversal: true
+    forward_sign_mode: preserve
+    reverse_sign_mode: preserve
+    confidence_penalty: 0.92
+    max_depth_preference: 3
+
+  has_capability:
+    forward_multiplier: 0.72
+    reverse_multiplier: 0.82
+    allows_reverse_traversal: true
+    forward_sign_mode: preserve
+    reverse_sign_mode: preserve
+    confidence_penalty: 0.94
+    max_depth_preference: 3
+
+  enabled_by:
+    forward_multiplier: 0.48
+    reverse_multiplier: 0.84
+    allows_reverse_traversal: true
+    forward_sign_mode: use_edge_sign
+    reverse_sign_mode: use_edge_sign
+    confidence_penalty: 0.92
+    max_depth_preference: 3
+
+  regulates:
+    forward_multiplier: 0.82
+    reverse_multiplier: 0.55
+    allows_reverse_traversal: true
+    forward_sign_mode: use_edge_sign
+    reverse_sign_mode: use_edge_sign
+    confidence_penalty: 0.9
+    max_depth_preference: 3
+
+  exposed_to_policy:
+    forward_multiplier: 0.74
+    reverse_multiplier: 0.62
+    allows_reverse_traversal: true
+    forward_sign_mode: use_edge_sign
+    reverse_sign_mode: use_edge_sign
+    confidence_penalty: 0.9
+    max_depth_preference: 3
+
   in_segment_primary:
     forward_multiplier: 0.3
     reverse_multiplier: 0.95

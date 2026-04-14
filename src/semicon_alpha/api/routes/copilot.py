@@ -19,6 +19,8 @@ def query_copilot(
             query=request.query,
             event_id=request.event_id,
             entity_id=request.entity_id,
+            scenario_id=request.scenario_id,
+            thesis_id=request.thesis_id,
         )
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

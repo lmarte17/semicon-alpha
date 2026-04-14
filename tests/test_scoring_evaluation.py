@@ -21,6 +21,7 @@ def _build_test_settings(tmp_path: Path) -> Settings:
     for config_name in (
         "benchmarks.yaml",
         "graph_schema.yaml",
+        "ontology_nodes.yaml",
         "relationship_edges.yaml",
         "scoring_rules.yaml",
         "theme_nodes.yaml",
@@ -37,6 +38,7 @@ def _write_reference_parquets(settings: Settings) -> None:
     relationship_payload = yaml.safe_load(
         (settings.configs_dir / "relationship_edges.yaml").read_text(encoding="utf-8")
     )
+    ontology_payload = yaml.safe_load((settings.configs_dir / "ontology_nodes.yaml").read_text(encoding="utf-8"))
     theme_payload = yaml.safe_load((settings.configs_dir / "theme_nodes.yaml").read_text(encoding="utf-8"))
 
     company_rows = []
@@ -67,6 +69,7 @@ def _write_reference_parquets(settings: Settings) -> None:
         )
     pd.DataFrame(company_rows).to_parquet(settings.processed_dir / "company_registry.parquet", index=False)
     pd.DataFrame(theme_payload["themes"]).to_parquet(settings.processed_dir / "theme_nodes.parquet", index=False)
+    pd.DataFrame(ontology_payload["nodes"]).to_parquet(settings.processed_dir / "ontology_nodes.parquet", index=False)
 
     company_edges = [
         edge
@@ -76,13 +79,24 @@ def _write_reference_parquets(settings: Settings) -> None:
     theme_edges = [
         edge
         for edge in relationship_payload["edges"]
-        if not (edge["source_type"] == "company" and edge["target_type"] == "company")
+        if "theme" in {edge["source_type"], edge["target_type"]}
+    ]
+    ontology_edges = [
+        edge
+        for edge in relationship_payload["edges"]
+        if not (
+            edge["source_type"] == "company" and edge["target_type"] == "company"
+        )
+        and "theme" not in {edge["source_type"], edge["target_type"]}
     ]
     pd.DataFrame(company_edges).to_parquet(
         settings.processed_dir / "company_relationships.parquet", index=False
     )
     pd.DataFrame(theme_edges).to_parquet(
         settings.processed_dir / "theme_relationships.parquet", index=False
+    )
+    pd.DataFrame(ontology_edges).to_parquet(
+        settings.processed_dir / "ontology_relationships.parquet", index=False
     )
 
 

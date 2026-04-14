@@ -7,7 +7,9 @@ from semicon_alpha.services.dashboard import DashboardService
 from semicon_alpha.services.entities import EntityWorkspaceService
 from semicon_alpha.services.events import EventWorkspaceService
 from semicon_alpha.services.graph_view import GraphExplorerService
+from semicon_alpha.services.scenarios import ScenarioService
 from semicon_alpha.services.search import SearchService
+from semicon_alpha.services.theses import ThesisService
 
 
 class CopilotService:
@@ -18,24 +20,34 @@ class CopilotService:
         event_service: EventWorkspaceService,
         graph_service: GraphExplorerService,
         search_service: SearchService,
+        scenario_service: ScenarioService,
+        thesis_service: ThesisService,
     ) -> None:
         self.dashboard_service = dashboard_service
         self.entity_service = entity_service
         self.event_service = event_service
         self.graph_service = graph_service
         self.search_service = search_service
+        self.scenario_service = scenario_service
+        self.thesis_service = thesis_service
 
     def query(
         self,
         query: str,
         event_id: str | None = None,
         entity_id: str | None = None,
+        scenario_id: str | None = None,
+        thesis_id: str | None = None,
     ) -> dict[str, Any]:
         lowered = query.lower().strip()
         if event_id:
             return self._handle_event_scoped(query, lowered, event_id)
         if entity_id:
             return self._handle_entity_scoped(query, lowered, entity_id)
+        if scenario_id:
+            return self._handle_scenario_scoped(scenario_id)
+        if thesis_id:
+            return self._handle_thesis_scoped(thesis_id)
 
         compare_match = re.search(r"compare\s+(.+?)\s+and\s+(.+)", lowered)
         if compare_match:
@@ -148,6 +160,69 @@ class CopilotService:
                 {"id": row["event_id"], "title": row["headline"], "type": "event"}
                 for row in workspace["recent_events"][:5]
                 if row.get("headline")
+            ],
+        }
+
+    def _handle_scenario_scoped(self, scenario_id: str) -> dict[str, Any]:
+        workspace = self.scenario_service.get_scenario_workspace(scenario_id)
+        scenario = workspace["scenario"]
+        latest_run = workspace["latest_run"] or self.scenario_service.run_scenario(scenario_id)
+        impacted = latest_run.get("impacted_entities_json") or []
+        leaders = ", ".join(
+            f"{row['ticker']} ({row['direction']})"
+            for row in impacted[:3]
+            if row.get("ticker")
+        )
+        answer = (
+            f"{scenario['name']} currently points most strongly toward {leaders or 'no clear affected entities'} "
+            "based on its explicit assumptions and retained graph paths."
+        )
+        observations = [
+            f"Assumption count: {len(workspace['assumptions'])}",
+            f"Monitor count: {len(workspace['monitors'])}",
+            f"Run history count: {len(workspace['run_history'])}",
+        ]
+        inferences = [latest_run.get("run_summary")] if latest_run.get("run_summary") else []
+        return {
+            "answer": answer,
+            "observations": observations,
+            "inferences": inferences,
+            "citations": [],
+            "related_entities": [
+                {"id": row["entity_id"], "title": row["label"], "type": "entity"} for row in impacted[:5]
+            ],
+            "related_events": [
+                {"id": row["event_id"], "title": row["headline"], "type": "event"}
+                for row in workspace["contradiction_signals"][:3] + workspace["support_signals"][:3]
+                if row.get("event_id")
+            ],
+        }
+
+    def _handle_thesis_scoped(self, thesis_id: str) -> dict[str, Any]:
+        workspace = self.thesis_service.get_thesis_workspace(thesis_id)
+        thesis = workspace["thesis"]
+        answer = (
+            f"{thesis['title']} is currently {thesis.get('stance')} with confidence "
+            f"{float(thesis.get('confidence') or 0.0):.2f}. "
+            f"There are {len(workspace['support_signals'])} supportive signals and "
+            f"{len(workspace['contradiction_signals'])} contradictory signals in the current monitor set."
+        )
+        observations = [
+            f"Linked items: {len(workspace['links'])}",
+            f"Update count: {len(workspace['updates'])}",
+            f"Status: {thesis.get('status')}",
+        ]
+        inferences = [workspace["updates"][0]["summary"]] if workspace["updates"] else []
+        return {
+            "answer": answer,
+            "observations": observations,
+            "inferences": inferences,
+            "citations": [],
+            "related_entities": [],
+            "related_events": [
+                {"id": row["event_id"], "title": row["headline"], "type": "event"}
+                for row in workspace["support_signals"][:3] + workspace["contradiction_signals"][:3]
+                if row.get("event_id")
             ],
         }
 

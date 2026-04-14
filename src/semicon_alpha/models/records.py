@@ -192,8 +192,82 @@ class GraphEdgeRecord(FlatRecordModel):
     evidence: str | None = None
     evidence_url: str | None = None
     last_updated: str
+    effective_start: str | None = None
+    effective_end: str | None = None
+    relationship_status: str = "active"
     source_table: str
     is_derived: bool = False
+    metadata_json: dict[str, Any] | list[Any] | None = None
+
+
+class GraphNodeHistoryRecord(FlatRecordModel):
+    snapshot_id: str
+    snapshot_at_utc: datetime
+    node_id: str
+    node_type: str
+    label: str
+    description: str | None = None
+    source_table: str
+    ticker: str | None = None
+    segment_primary: str | None = None
+    metadata_json: dict[str, Any] | list[Any] | None = None
+    is_active: bool = True
+
+
+class GraphEdgeHistoryRecord(FlatRecordModel):
+    snapshot_id: str
+    snapshot_at_utc: datetime
+    edge_id: str
+    source_node_id: str
+    target_node_id: str
+    source_node_type: str
+    target_node_type: str
+    edge_type: str
+    weight: float
+    sign: str
+    confidence: float
+    evidence: str | None = None
+    evidence_url: str | None = None
+    last_updated: str
+    effective_start: str | None = None
+    effective_end: str | None = None
+    relationship_status: str = "active"
+    source_table: str
+    is_derived: bool = False
+    metadata_json: dict[str, Any] | list[Any] | None = None
+
+
+class GraphChangeRecord(FlatRecordModel):
+    snapshot_id: str
+    snapshot_at_utc: datetime
+    object_type: str
+    object_id: str
+    change_type: str
+    node_id: str | None = None
+    edge_id: str | None = None
+    node_type: str | None = None
+    edge_type: str | None = None
+    label: str | None = None
+    source_node_id: str | None = None
+    target_node_id: str | None = None
+    summary: str
+    previous_value_json: dict[str, Any] | list[Any] | None = None
+    current_value_json: dict[str, Any] | list[Any] | None = None
+
+
+class RetrievalIndexRecord(FlatRecordModel):
+    item_id: str
+    item_type: str
+    search_category: str
+    title: str
+    subtitle: str | None = None
+    url: str | None = None
+    semantic_text: str
+    aliases: list[str]
+    lexical_terms: list[str]
+    embedding_vector: list[float]
+    metadata_json: dict[str, Any] | list[Any] | None = None
+    updated_at_utc: datetime
 
 
 class EventGraphAnchorRecord(FlatRecordModel):
@@ -379,6 +453,16 @@ class ThemeNodeRecord(FlatRecordModel):
     description: str
 
 
+class OntologyNodeRecord(FlatRecordModel):
+    node_id: str
+    node_type: str
+    label: str
+    description: str | None = None
+    aliases: list[str] = []
+    metadata_json: dict[str, Any] | list[Any] | None = None
+    is_active: bool = True
+
+
 class RelationshipEdgeRecord(FlatRecordModel):
     edge_id: str
     source_type: str
@@ -392,6 +476,10 @@ class RelationshipEdgeRecord(FlatRecordModel):
     evidence: str | None = None
     evidence_url: str | None = None
     last_updated: str
+    effective_start: str | None = None
+    effective_end: str | None = None
+    relationship_status: str = "active"
+    metadata_json: dict[str, Any] | list[Any] | None = None
 
 
 class CompanyFundamentalRecord(FlatRecordModel):

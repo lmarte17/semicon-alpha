@@ -8,6 +8,7 @@ from semicon_alpha.ingestion.fmp import FMPIngestionService
 from semicon_alpha.models.records import (
     CompanyFundamentalRecord,
     CompanyRegistryRecord,
+    OntologyNodeRecord,
     RelationshipEdgeRecord,
     ThemeNodeRecord,
     UniverseCompanyConfig,
@@ -24,12 +25,15 @@ class ReferenceDataService:
         self.catalog = DuckDBCatalog(settings)
         self.company_registry_path = settings.processed_dir / "company_registry.parquet"
         self.theme_nodes_path = settings.processed_dir / "theme_nodes.parquet"
+        self.ontology_nodes_path = settings.processed_dir / "ontology_nodes.parquet"
         self.company_relationships_path = settings.processed_dir / "company_relationships.parquet"
         self.theme_relationships_path = settings.processed_dir / "theme_relationships.parquet"
+        self.ontology_relationships_path = settings.processed_dir / "ontology_relationships.parquet"
 
     def sync_reference_data(self, skip_exchange_symbols: bool = False) -> dict[str, int]:
         companies = self.market_service.load_universe()
         themes = self.load_themes()
+        ontology_nodes = self.load_ontology_nodes()
         relationships = self.load_relationships()
 
         if not skip_exchange_symbols:
@@ -38,10 +42,15 @@ class ReferenceDataService:
 
         fundamentals = self.market_service.sync_company_fundamentals(companies)
         company_registry = self.build_company_registry(companies, fundamentals)
-        company_relationships, theme_relationships = self.partition_relationships(relationships)
+        (
+            company_relationships,
+            theme_relationships,
+            ontology_relationships,
+        ) = self.partition_relationships(relationships)
 
         upsert_parquet(self.company_registry_path, company_registry, unique_keys=["entity_id"])
         upsert_parquet(self.theme_nodes_path, themes, unique_keys=["node_id"])
+        upsert_parquet(self.ontology_nodes_path, ontology_nodes, unique_keys=["node_id"])
         upsert_parquet(
             self.company_relationships_path,
             company_relationships,
@@ -52,10 +61,16 @@ class ReferenceDataService:
             theme_relationships,
             unique_keys=["edge_id"],
         )
+        upsert_parquet(
+            self.ontology_relationships_path,
+            ontology_relationships,
+            unique_keys=["edge_id"],
+        )
         self.catalog.refresh_processed_views()
         return {
             "company_count": len(company_registry),
             "theme_count": len(themes),
+            "ontology_node_count": len(ontology_nodes),
             "relationship_count": len(relationships),
             "fundamental_count": len(fundamentals),
         }
@@ -63,6 +78,10 @@ class ReferenceDataService:
     def load_themes(self) -> list[ThemeNodeRecord]:
         payload = load_yaml(self.settings.configs_dir / "theme_nodes.yaml")
         return [ThemeNodeRecord(**item) for item in payload["themes"]]
+
+    def load_ontology_nodes(self) -> list[OntologyNodeRecord]:
+        payload = load_yaml(self.settings.configs_dir / "ontology_nodes.yaml")
+        return [OntologyNodeRecord(**item) for item in payload["nodes"]]
 
     def load_relationships(self) -> list[RelationshipEdgeRecord]:
         payload = load_yaml(self.settings.configs_dir / "relationship_edges.yaml")
@@ -106,15 +125,18 @@ class ReferenceDataService:
 
     def partition_relationships(
         self, relationships: Iterable[RelationshipEdgeRecord]
-    ) -> tuple[list[RelationshipEdgeRecord], list[RelationshipEdgeRecord]]:
+    ) -> tuple[list[RelationshipEdgeRecord], list[RelationshipEdgeRecord], list[RelationshipEdgeRecord]]:
         company_edges: list[RelationshipEdgeRecord] = []
         theme_edges: list[RelationshipEdgeRecord] = []
+        ontology_edges: list[RelationshipEdgeRecord] = []
         for relationship in relationships:
             if relationship.source_type == "company" and relationship.target_type == "company":
                 company_edges.append(relationship)
-            else:
+            elif "theme" in {relationship.source_type, relationship.target_type}:
                 theme_edges.append(relationship)
-        return company_edges, theme_edges
+            else:
+                ontology_edges.append(relationship)
+        return company_edges, theme_edges, ontology_edges
 
 
 def load_company_registry_frame(path) -> pd.DataFrame:

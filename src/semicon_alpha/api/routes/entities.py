@@ -9,6 +9,16 @@ from semicon_alpha.api.schemas import EntityWorkspace
 router = APIRouter(prefix="/entities", tags=["entities"])
 
 
+@router.get("")
+def list_entities(
+    node_type: str | None = Query(default=None),
+    q: str | None = Query(default=None),
+    limit: int = Query(default=25, ge=1, le=200),
+    services: APIServices = Depends(get_services),
+) -> list[dict]:
+    return services.entities.list_entities(node_type=node_type, query=q, limit=limit)
+
+
 @router.get("/{entity_id}", response_model=EntityWorkspace)
 def get_entity_workspace(
     entity_id: str,
@@ -18,6 +28,19 @@ def get_entity_workspace(
         return EntityWorkspace(**services.entities.get_entity_workspace(entity_id))
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.get("/{entity_id}/history")
+def get_entity_history(
+    entity_id: str,
+    limit: int = Query(default=20, ge=1, le=200),
+    services: APIServices = Depends(get_services),
+) -> list[dict]:
+    try:
+        services.entities.get_entity_workspace(entity_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return services.entities.get_entity_history(entity_id, limit=limit)
 
 
 @router.get("/{entity_id}/neighbors")

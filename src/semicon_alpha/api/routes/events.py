@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from semicon_alpha.api.dependencies import APIServices, get_services
-from semicon_alpha.api.schemas import EventWorkspace
+from semicon_alpha.api.schemas import EventBacktestResponse, EventWorkspace
 
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -45,5 +45,28 @@ def get_event_evidence(
 ) -> dict:
     try:
         return services.evidence.get_event_evidence(event_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.get("/{event_id}/analogs")
+def get_event_analogs(
+    event_id: str,
+    limit: int = Query(default=8, ge=1, le=20),
+    services: APIServices = Depends(get_services),
+) -> list[dict]:
+    try:
+        return services.research.get_event_analogs(event_id, limit=limit)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.get("/{event_id}/backtest", response_model=EventBacktestResponse)
+def get_event_backtest(
+    event_id: str,
+    services: APIServices = Depends(get_services),
+) -> EventBacktestResponse:
+    try:
+        return EventBacktestResponse(**services.research.get_event_backtest(event_id))
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

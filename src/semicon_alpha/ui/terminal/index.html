@@ -10,9 +10,9 @@
     <div class="app-shell">
       <aside class="left-rail">
         <div class="brand-block">
-          <div class="eyebrow">Wave 1</div>
+          <div class="eyebrow">Wave 5</div>
           <h1>Semicon Alpha</h1>
-          <p>Analyst workflow MVP over the event-propagation engine.</p>
+          <p>Analyst terminal over the event, graph, scoring, scenario, thesis, ontology, and retrieval stack.</p>
         </div>
         <form id="search-form" class="search-form">
           <input id="search-input" type="text" placeholder="Search entities, events, documents..." />
@@ -27,6 +27,111 @@
         </div>
         <div class="rail-section">
           <div class="section-header">
+            <h2>Ontology</h2>
+          </div>
+          <div class="ontology-grid">
+            <button class="ontology-button" data-node-type="country" type="button">Countries</button>
+            <button class="ontology-button" data-node-type="regulator" type="button">Regulators</button>
+            <button class="ontology-button" data-node-type="technology" type="button">Technologies</button>
+            <button class="ontology-button" data-node-type="facility" type="button">Facilities</button>
+            <button class="ontology-button" data-node-type="capability" type="button">Capabilities</button>
+            <button class="ontology-button" data-node-type="material" type="button">Materials</button>
+          </div>
+        </div>
+        <div class="rail-section">
+          <div class="section-header">
+            <h2>Watchlists</h2>
+          </div>
+          <form id="watchlist-form" class="stack-form compact-form">
+            <input id="watchlist-name" type="text" placeholder="New watchlist name" />
+            <button type="submit">Create Watchlist</button>
+          </form>
+          <div id="watchlist-list" class="list-stack subdued">
+            <p>No watchlists yet.</p>
+          </div>
+        </div>
+        <div class="rail-section">
+          <div class="section-header">
+            <h2>Boards</h2>
+          </div>
+          <form id="board-form" class="stack-form compact-form">
+            <input id="board-name" type="text" placeholder="New board name" />
+            <button type="submit">Create Board</button>
+          </form>
+          <div id="board-list" class="list-stack subdued">
+            <p>No boards yet.</p>
+          </div>
+        </div>
+        <div class="rail-section">
+          <div class="section-header">
+            <h2>Scenarios</h2>
+          </div>
+          <form id="scenario-form" class="stack-form compact-form">
+            <input id="scenario-name" type="text" placeholder="Scenario name" />
+            <select id="scenario-anchor-type">
+              <option value="theme">Theme</option>
+              <option value="entity">Entity</option>
+              <option value="segment">Segment</option>
+              <option value="event_type">Event Type</option>
+            </select>
+            <input id="scenario-anchor-id" type="text" placeholder="theme:ai_server_demand or ai_demand_hyperscaler_capex" />
+            <select id="scenario-direction">
+              <option value="positive">Positive</option>
+              <option value="negative">Negative</option>
+            </select>
+            <button type="submit">Create Scenario</button>
+          </form>
+          <div id="scenario-list" class="list-stack subdued">
+            <p>No scenarios yet.</p>
+          </div>
+        </div>
+        <div class="rail-section">
+          <div class="section-header">
+            <h2>Theses</h2>
+          </div>
+          <form id="thesis-form" class="stack-form compact-form">
+            <input id="thesis-title" type="text" placeholder="Thesis title" />
+            <textarea id="thesis-statement" rows="3" placeholder="Thesis statement"></textarea>
+            <select id="thesis-link-type">
+              <option value="entity">Entity</option>
+              <option value="theme">Theme</option>
+              <option value="scenario">Scenario</option>
+              <option value="event_type">Event Type</option>
+            </select>
+            <input id="thesis-link-id" type="text" placeholder="company:TSM or scenario:..." />
+            <select id="thesis-stance">
+              <option value="positive">Positive</option>
+              <option value="negative">Negative</option>
+              <option value="mixed">Mixed</option>
+            </select>
+            <button type="submit">Create Thesis</button>
+          </form>
+          <div id="thesis-list" class="list-stack subdued">
+            <p>No theses yet.</p>
+          </div>
+        </div>
+        <div class="rail-section">
+          <div class="section-header">
+            <h2>Alerts</h2>
+          </div>
+          <div id="alert-list" class="list-stack subdued">
+            <p>No active alerts.</p>
+          </div>
+        </div>
+        <div class="rail-section">
+          <div class="section-header">
+            <h2>Saved Queries</h2>
+          </div>
+          <form id="save-query-form" class="stack-form compact-form">
+            <input id="query-name" type="text" placeholder="Name current search" />
+            <button type="submit">Save Search</button>
+          </form>
+          <div id="query-list" class="list-stack subdued">
+            <p>No saved queries yet.</p>
+          </div>
+        </div>
+        <div class="rail-section">
+          <div class="section-header">
             <h2>Recent Events</h2>
           </div>
           <div id="event-list" class="list-stack"></div>
@@ -36,7 +141,7 @@
             <h2>Search Results</h2>
           </div>
           <div id="search-results" class="list-stack subdued">
-            <p>Use the search bar to find entities, events, themes, and documents.</p>
+            <p>Use the search bar to find entities, events, documents, and themes.</p>
           </div>
         </div>
       </aside>
@@ -49,10 +154,44 @@
       <aside class="context-panel">
         <section class="context-card">
           <div class="section-header">
+            <h2>Workflow</h2>
+          </div>
+          <form id="context-actions-form" class="stack-form">
+            <select id="watchlist-select"></select>
+            <button id="watch-context-button" type="submit">Add Current Context To Watchlist</button>
+          </form>
+          <form id="board-actions-form" class="stack-form">
+            <select id="board-select"></select>
+            <button id="board-context-button" type="submit">Save Current Context To Board</button>
+          </form>
+        </section>
+
+        <section class="context-card">
+          <div class="section-header">
             <h2>Evidence</h2>
           </div>
           <div id="evidence-panel" class="panel-scroll">
             <p>Select an event or entity to inspect evidence.</p>
+          </div>
+        </section>
+
+        <section class="context-card">
+          <div class="section-header">
+            <h2>Notes</h2>
+          </div>
+          <form id="note-form" class="stack-form">
+            <input id="note-title" type="text" placeholder="Optional note title" />
+            <select id="note-stance">
+              <option value="">No stance</option>
+              <option value="positive">Positive stance</option>
+              <option value="negative">Negative stance</option>
+              <option value="mixed">Mixed stance</option>
+            </select>
+            <textarea id="note-body" rows="4" placeholder="Attach a note to the current entity, event, or board..."></textarea>
+            <button type="submit">Save Note</button>
+          </form>
+          <div id="notes-panel" class="panel-scroll subdued">
+            <p>Notes and annotations for the current context appear here.</p>
           </div>
         </section>
 
@@ -66,6 +205,26 @@
           </form>
           <div id="copilot-output" class="panel-scroll subdued">
             <p>Copilot answers stay grounded in event, entity, path, and evidence data.</p>
+          </div>
+        </section>
+
+        <section class="context-card">
+          <div class="section-header">
+            <h2>Reports</h2>
+          </div>
+          <form id="report-form" class="stack-form">
+            <select id="report-type">
+              <option value="event_impact_brief">Event Impact Brief</option>
+              <option value="weekly_thematic_brief">Weekly Thematic Brief</option>
+              <option value="entity_comparison_brief">Entity Comparison Brief</option>
+              <option value="scenario_memo">Scenario Memo</option>
+              <option value="thesis_change_report">Thesis Change Report</option>
+            </select>
+            <input id="report-compare-entity" type="text" placeholder="Compare entity id (optional)" />
+            <button type="submit">Generate Report</button>
+          </form>
+          <div id="report-list" class="panel-scroll subdued">
+            <p>Generated reports appear here.</p>
           </div>
         </section>
 

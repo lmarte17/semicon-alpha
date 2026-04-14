@@ -443,3 +443,216 @@ edges:
     evidence: NXP benefits from automotive semiconductor demand.
     evidence_url: null
     last_updated: "2026-04-12"
+  - edge_id: rel:tsm_taiwan_location
+    source_type: company
+    source_id: company:TSM
+    target_type: country
+    target_id: country:taiwan
+    edge_type: located_in
+    weight: 1.0
+    sign: positive
+    confidence: 0.99
+    evidence: TSMC is headquartered and operates core leading-edge capacity in Taiwan.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    effective_start: "1987-02-21"
+    relationship_status: active
+  - edge_id: rel:asml_netherlands_location
+    source_type: company
+    source_id: company:ASML
+    target_type: country
+    target_id: country:netherlands
+    edge_type: located_in
+    weight: 1.0
+    sign: positive
+    confidence: 0.99
+    evidence: ASML is based in the Netherlands.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    relationship_status: active
+  - edge_id: rel:tsmc_fab18_owned
+    source_type: company
+    source_id: company:TSM
+    target_type: facility
+    target_id: facility:tsmc_fab18
+    edge_type: owns_facility
+    weight: 0.98
+    sign: positive
+    confidence: 0.97
+    evidence: TSMC owns and operates Fab 18 as a leading-edge manufacturing asset.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    relationship_status: active
+  - edge_id: rel:fab18_taiwan_location
+    source_type: facility
+    source_id: facility:tsmc_fab18
+    target_type: country
+    target_id: country:taiwan
+    edge_type: located_in
+    weight: 1.0
+    sign: positive
+    confidence: 0.99
+    evidence: Fab 18 is located in Taiwan.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    relationship_status: active
+  - edge_id: rel:fab18_euv
+    source_type: facility
+    source_id: facility:tsmc_fab18
+    target_type: technology
+    target_id: technology:euv_lithography
+    edge_type: uses_technology
+    weight: 0.95
+    sign: positive
+    confidence: 0.92
+    evidence: TSMC Fab 18 is associated with EUV-enabled leading-edge manufacturing.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    effective_start: "2020-01-01"
+    relationship_status: active
+  - edge_id: rel:tsm_cowos
+    source_type: company
+    source_id: company:TSM
+    target_type: technology
+    target_id: technology:cowos
+    edge_type: uses_technology
+    weight: 0.94
+    sign: positive
+    confidence: 0.94
+    evidence: TSMC is a central provider of CoWoS advanced packaging capacity.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    relationship_status: active
+  - edge_id: rel:tsm_packaging_capacity
+    source_type: company
+    source_id: company:TSM
+    target_type: capability
+    target_id: capability:advanced_packaging_capacity
+    edge_type: has_capability
+    weight: 0.95
+    sign: positive
+    confidence: 0.93
+    evidence: TSMC controls a meaningful share of advanced packaging capacity relevant to AI systems.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    relationship_status: active
+  - edge_id: rel:asx_packaging_capacity
+    source_type: company
+    source_id: company:ASX
+    target_type: capability
+    target_id: capability:advanced_packaging_capacity
+    edge_type: has_capability
+    weight: 0.74
+    sign: positive
+    confidence: 0.8
+    evidence: ASE contributes outsourced advanced packaging and test capacity.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    relationship_status: active
+  - edge_id: rel:amkr_packaging_capacity
+    source_type: company
+    source_id: company:AMKR
+    target_type: capability
+    target_id: capability:advanced_packaging_capacity
+    edge_type: has_capability
+    weight: 0.69
+    sign: positive
+    confidence: 0.75
+    evidence: Amkor participates in advanced packaging capacity for heterogeneous systems.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    relationship_status: active
+  - edge_id: rel:mu_hbm_capability
+    source_type: company
+    source_id: company:MU
+    target_type: capability
+    target_id: capability:hbm_supply
+    edge_type: has_capability
+    weight: 0.9
+    sign: positive
+    confidence: 0.9
+    evidence: Micron has meaningful HBM supply capability tied to accelerator demand.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    relationship_status: active
+  - edge_id: rel:mu_hbm_material
+    source_type: company
+    source_id: company:MU
+    target_type: material
+    target_id: material:hbm_memory
+    edge_type: produces_material
+    weight: 0.95
+    sign: positive
+    confidence: 0.95
+    evidence: Micron produces HBM memory used in accelerator platforms.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    relationship_status: active
+  - edge_id: rel:hbm_to_theme
+    source_type: material
+    source_id: material:hbm_memory
+    target_type: theme
+    target_id: theme:hbm_demand
+    edge_type: enabled_by
+    weight: 0.9
+    sign: positive
+    confidence: 0.88
+    evidence: HBM demand depends on HBM memory availability and scale.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    relationship_status: active
+  - edge_id: rel:cowos_to_packaging_theme
+    source_type: technology
+    source_id: technology:cowos
+    target_type: theme
+    target_id: theme:advanced_packaging
+    edge_type: enabled_by
+    weight: 0.92
+    sign: positive
+    confidence: 0.9
+    evidence: CoWoS is a defining technology within the advanced packaging bottleneck.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    relationship_status: active
+  - edge_id: rel:euv_to_leading_edge
+    source_type: technology
+    source_id: technology:euv_lithography
+    target_type: theme
+    target_id: theme:leading_edge_logic
+    edge_type: bottleneck_for
+    weight: 0.96
+    sign: positive
+    confidence: 0.96
+    evidence: EUV lithography is a bottleneck for leading-edge logic production.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    relationship_status: active
+  - edge_id: rel:bis_asml_policy
+    source_type: regulator
+    source_id: regulator:us_bis
+    target_type: company
+    target_id: company:ASML
+    edge_type: exposed_to_policy
+    weight: 0.76
+    sign: negative
+    confidence: 0.84
+    evidence: BIS export controls can constrain shipments of advanced lithography tools.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    effective_start: "2022-10-07"
+    relationship_status: active
+    metadata_json:
+      policy_scope: lithography_exports
+  - edge_id: rel:commerce_bis
+    source_type: regulator
+    source_id: regulator:commerce_department
+    target_type: regulator
+    target_id: regulator:us_bis
+    edge_type: regulates
+    weight: 0.88
+    sign: positive
+    confidence: 0.85
+    evidence: BIS operates within the U.S. Commerce Department.
+    evidence_url: null
+    last_updated: "2026-04-12"
+    relationship_status: active

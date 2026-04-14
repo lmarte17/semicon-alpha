@@ -19,6 +19,7 @@ def _build_test_settings(tmp_path: Path) -> Settings:
     configs_dir.mkdir(parents=True, exist_ok=True)
     for config_name in (
         "graph_schema.yaml",
+        "ontology_nodes.yaml",
         "relationship_edges.yaml",
         "theme_nodes.yaml",
         "universe.yaml",
@@ -34,6 +35,7 @@ def _write_reference_parquets(settings: Settings) -> None:
     relationship_payload = yaml.safe_load(
         (settings.configs_dir / "relationship_edges.yaml").read_text(encoding="utf-8")
     )
+    ontology_payload = yaml.safe_load((settings.configs_dir / "ontology_nodes.yaml").read_text(encoding="utf-8"))
     theme_payload = yaml.safe_load((settings.configs_dir / "theme_nodes.yaml").read_text(encoding="utf-8"))
 
     company_rows = []
@@ -65,6 +67,7 @@ def _write_reference_parquets(settings: Settings) -> None:
     pd.DataFrame(company_rows).to_parquet(settings.processed_dir / "company_registry.parquet", index=False)
 
     pd.DataFrame(theme_payload["themes"]).to_parquet(settings.processed_dir / "theme_nodes.parquet", index=False)
+    pd.DataFrame(ontology_payload["nodes"]).to_parquet(settings.processed_dir / "ontology_nodes.parquet", index=False)
 
     company_edges = [
         edge
@@ -74,13 +77,24 @@ def _write_reference_parquets(settings: Settings) -> None:
     theme_edges = [
         edge
         for edge in relationship_payload["edges"]
-        if not (edge["source_type"] == "company" and edge["target_type"] == "company")
+        if "theme" in {edge["source_type"], edge["target_type"]}
+    ]
+    ontology_edges = [
+        edge
+        for edge in relationship_payload["edges"]
+        if not (
+            edge["source_type"] == "company" and edge["target_type"] == "company"
+        )
+        and "theme" not in {edge["source_type"], edge["target_type"]}
     ]
     pd.DataFrame(company_edges).to_parquet(
         settings.processed_dir / "company_relationships.parquet", index=False
     )
     pd.DataFrame(theme_edges).to_parquet(
         settings.processed_dir / "theme_relationships.parquet", index=False
+    )
+    pd.DataFrame(ontology_edges).to_parquet(
+        settings.processed_dir / "ontology_relationships.parquet", index=False
     )
 
 
@@ -99,6 +113,8 @@ def test_graph_build_service_creates_expected_nodes_and_edges(tmp_path):
     assert "company:NVDA" in set(nodes["node_id"])
     assert "theme:ai_server_demand" in set(nodes["node_id"])
     assert "segment:ai_accelerators" in set(nodes["node_id"])
+    assert "country:taiwan" in set(nodes["node_id"])
+    assert "facility:tsmc_fab18" in set(nodes["node_id"])
 
     segment_edge = edges[
         (edges["source_node_id"] == "company:NVDA") & (edges["edge_type"] == "in_segment_primary")
@@ -113,6 +129,11 @@ def test_graph_build_service_creates_expected_nodes_and_edges(tmp_path):
     neighbors = get_neighbors(graph, "theme:ai_server_demand")
     incoming_sources = {row["source_node_id"] for row in neighbors["incoming"]}
     assert {"company:NVDA", "company:AMD"}.issubset(incoming_sources)
+
+    history = pd.read_parquet(settings.processed_dir / "graph_node_history.parquet")
+    change_log = pd.read_parquet(settings.processed_dir / "graph_change_log.parquet")
+    assert not history.empty
+    assert not change_log.empty
 
 
 def test_graph_propagation_service_handles_theme_only_event(tmp_path):

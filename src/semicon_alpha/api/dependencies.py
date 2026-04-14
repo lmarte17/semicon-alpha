@@ -11,7 +11,16 @@ from semicon_alpha.services import (
     EventWorkspaceService,
     EvidenceService,
     GraphExplorerService,
+    NotesService,
+    ReportService,
+    ResearchService,
+    ScenarioService,
+    SavedQueryService,
     SearchService,
+    ThesisService,
+    AlertService,
+    BoardService,
+    WatchlistService,
     WorldModelRepository,
 )
 
@@ -26,6 +35,15 @@ class APIServices:
     graph: GraphExplorerService
     search: SearchService
     copilot: CopilotService
+    watchlists: WatchlistService
+    boards: BoardService
+    notes: NotesService
+    alerts: AlertService
+    queries: SavedQueryService
+    research: ResearchService
+    reports: ReportService
+    scenarios: ScenarioService
+    theses: ThesisService
 
 
 def get_services(request: Request) -> APIServices:

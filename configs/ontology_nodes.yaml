@@ -1,0 +1,113 @@
+nodes:
+  - node_id: country:united_states
+    node_type: country
+    label: United States
+    description: Largest listed semiconductor design and equipment market in the tracked universe.
+    aliases: [US, USA, America]
+    metadata_json:
+      iso2: US
+      region: north_america
+  - node_id: country:taiwan
+    node_type: country
+    label: Taiwan
+    description: Core global center for advanced foundry capacity and packaging concentration.
+    aliases: [TW, ROC]
+    metadata_json:
+      iso2: TW
+      region: asia_pacific
+  - node_id: country:netherlands
+    node_type: country
+    label: Netherlands
+    description: Home jurisdiction for ASML and a key chokepoint in lithography exports.
+    aliases: [NL]
+    metadata_json:
+      iso2: NL
+      region: europe
+  - node_id: regulator:us_bis
+    node_type: regulator
+    label: U.S. BIS
+    description: U.S. Bureau of Industry and Security export-control authority.
+    aliases: [BIS, Bureau of Industry and Security, US BIS]
+    metadata_json:
+      jurisdiction: united_states
+      regulator_type: export_control
+  - node_id: regulator:commerce_department
+    node_type: regulator
+    label: U.S. Commerce Department
+    description: Cabinet-level department shaping export controls and industrial policy.
+    aliases: [Commerce, U.S. Commerce]
+    metadata_json:
+      jurisdiction: united_states
+      regulator_type: industrial_policy
+  - node_id: technology:euv_lithography
+    node_type: technology
+    label: EUV lithography
+    description: Extreme ultraviolet lithography used in leading-edge process manufacturing.
+    aliases: [EUV, EUV tools]
+    metadata_json:
+      technology_family: lithography
+      maturity_band: leading_edge
+  - node_id: technology:gate_all_around
+    node_type: technology
+    label: Gate-all-around
+    description: Advanced transistor architecture for next-generation leading-edge nodes.
+    aliases: [GAA, nanosheet transistors]
+    metadata_json:
+      technology_family: transistor_architecture
+      maturity_band: leading_edge
+  - node_id: technology:cowos
+    node_type: technology
+    label: CoWoS
+    description: Advanced 2.5D packaging technology widely associated with AI accelerator assembly.
+    aliases: [cowos, chip-on-wafer-on-substrate]
+    metadata_json:
+      technology_family: advanced_packaging
+      maturity_band: scale_up
+  - node_id: material:hbm_memory
+    node_type: material
+    label: HBM memory
+    description: High-bandwidth memory stack used in AI accelerator platforms.
+    aliases: [HBM, high bandwidth memory]
+    metadata_json:
+      material_family: memory
+      end_market: ai_infrastructure
+  - node_id: material:silicon_carbide
+    node_type: material
+    label: Silicon carbide
+    description: Wide-bandgap material used in power semiconductors and EV-adjacent systems.
+    aliases: [SiC]
+    metadata_json:
+      material_family: substrate
+      end_market: power_semiconductors
+  - node_id: capability:advanced_packaging_capacity
+    node_type: capability
+    label: Advanced packaging capacity
+    description: Constrained packaging and assembly throughput for heterogeneous AI systems.
+    aliases: [advanced packaging, packaging capacity]
+    metadata_json:
+      capability_family: packaging
+  - node_id: capability:hbm_supply
+    node_type: capability
+    label: HBM supply
+    description: Commercial ability to supply HBM stacks at scale.
+    aliases: [HBM supply]
+    metadata_json:
+      capability_family: memory
+  - node_id: facility:tsmc_fab18
+    node_type: facility
+    label: TSMC Fab 18
+    description: TSMC leading-edge fab complex in Taiwan associated with advanced-node production.
+    aliases: [Fab 18]
+    metadata_json:
+      facility_type: fab
+      country_node_id: country:taiwan
+      owner_node_id: company:TSM
+  - node_id: facility:intel_ohio
+    node_type: facility
+    label: Intel Ohio site
+    description: Intel leading-edge manufacturing expansion site in the United States.
+    aliases: [Ohio fab project]
+    metadata_json:
+      facility_type: fab_site
+      country_node_id: country:united_states
+      owner_node_id: company:INTC

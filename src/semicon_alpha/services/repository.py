@@ -60,12 +60,28 @@ class WorldModelRepository:
         return self._read_parquet("graph_edges.parquet", required=True)
 
     @cached_property
+    def graph_node_history(self) -> pd.DataFrame:
+        return self._read_parquet("graph_node_history.parquet")
+
+    @cached_property
+    def graph_edge_history(self) -> pd.DataFrame:
+        return self._read_parquet("graph_edge_history.parquet")
+
+    @cached_property
+    def graph_change_log(self) -> pd.DataFrame:
+        return self._read_parquet("graph_change_log.parquet")
+
+    @cached_property
     def company_registry(self) -> pd.DataFrame:
         return self._read_parquet("company_registry.parquet", required=True)
 
     @cached_property
     def theme_nodes(self) -> pd.DataFrame:
         return self._read_parquet("theme_nodes.parquet")
+
+    @cached_property
+    def ontology_nodes(self) -> pd.DataFrame:
+        return self._read_parquet("ontology_nodes.parquet")
 
     @cached_property
     def articles_enriched(self) -> pd.DataFrame:
@@ -84,12 +100,20 @@ class WorldModelRepository:
         return self._read_parquet("theme_relationships.parquet")
 
     @cached_property
+    def ontology_relationships(self) -> pd.DataFrame:
+        return self._read_parquet("ontology_relationships.parquet")
+
+    @cached_property
     def lag_predictions(self) -> pd.DataFrame:
         return self._read_parquet("event_lag_predictions.parquet")
 
     @cached_property
     def evaluation_summary(self) -> pd.DataFrame:
         return self._read_parquet("evaluation_summary.parquet")
+
+    @cached_property
+    def retrieval_index(self) -> pd.DataFrame:
+        return self._read_parquet("retrieval_index.parquet")
 
     def invalidate(self) -> None:
         for attribute in list(vars(self)):
@@ -105,14 +129,20 @@ class WorldModelRepository:
             "event_paths",
             "graph_nodes",
             "graph_edges",
+            "graph_node_history",
+            "graph_edge_history",
+            "graph_change_log",
             "company_registry",
             "theme_nodes",
+            "ontology_nodes",
             "articles_enriched",
             "articles_discovered",
             "company_relationships",
             "theme_relationships",
+            "ontology_relationships",
             "lag_predictions",
             "evaluation_summary",
+            "retrieval_index",
         ):
             self.__dict__.pop(attribute, None)
 
