@@ -13,6 +13,13 @@ from semicon_alpha.ingestion.fmp import FMPIngestionService
 from semicon_alpha.ingestion.lithos import LithosIngestionService
 from semicon_alpha.ingestion.reference import ReferenceDataService
 from semicon_alpha.ingestion.source_enrichment import SourceEnrichmentService
+from semicon_alpha.llm import ArticleTriageService, GeminiClient
+from semicon_alpha.llm.config import LLMStructuredCallConfig, ModelTier
+from semicon_alpha.llm.prompts import (
+    ARTICLE_TRIAGE_PROMPT_VERSION,
+    ARTICLE_TRIAGE_SYSTEM_PROMPT,
+)
+from semicon_alpha.llm.schemas import ArticleTriageResponse
 from semicon_alpha.retrieval import RetrievalIndexService
 from semicon_alpha.scoring import ExposureScoringService, LagModelingService
 from semicon_alpha.settings import Settings
@@ -34,6 +41,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     news_enrich.add_argument("--limit", type=int, default=25)
     news_enrich.add_argument("--force", action="store_true")
+
+    article_triage = subparsers.add_parser(
+        "article-triage", help="Run Gemini-backed relevance triage over enriched articles"
+    )
+    article_triage.add_argument("--limit", type=int, default=50)
+    article_triage.add_argument("--force", action="store_true")
 
     event_sync = subparsers.add_parser(
         "event-sync", help="Convert enriched articles into structured event intelligence datasets"
@@ -99,6 +112,7 @@ def build_parser() -> argparse.ArgumentParser:
     ingest_all.add_argument("--skip-exchange-symbols", action="store_true")
 
     subparsers.add_parser("db-sync", help="Refresh DuckDB views over processed parquet datasets")
+    subparsers.add_parser("llm-check", help="Run a Gemini structured-output connectivity check")
 
     return parser
 
@@ -112,6 +126,7 @@ def main() -> None:
 
     lithos_service = LithosIngestionService(settings)
     enrichment_service = SourceEnrichmentService(settings)
+    article_triage_service = ArticleTriageService(settings)
     event_service = EventIntelligenceService(settings)
     graph_build_service = GraphBuildService(settings)
     graph_propagation_service = GraphPropagationService(settings)
@@ -133,14 +148,33 @@ def main() -> None:
         LOGGER.info("Enriched %s articles", result["processed_count"])
         return
 
+    if args.command == "article-triage":
+        if not settings.llm_runtime_enabled:
+            raise RuntimeError(
+                "LLM runtime is not enabled. Set GEMINI_API_KEY in the environment or .env."
+            )
+        enriched_path = settings.processed_dir / "news_articles_enriched.parquet"
+        if not enriched_path.exists():
+            LOGGER.info("No enriched article dataset found; nothing to triage")
+            return
+        import pandas as pd
+
+        enriched = pd.read_parquet(enriched_path)
+        candidates = event_service._prepare_candidate_frame(enriched)  # noqa: SLF001
+        candidates = candidates.head(args.limit)
+        result = article_triage_service.run(candidates, force=args.force)
+        LOGGER.info("Triaged %s articles", len(result))
+        return
+
     if args.command == "event-sync":
         result = event_service.run(limit=args.limit, force=args.force)
         LOGGER.info(
-            "Structured %s events with %s entity mentions, %s classifications, and %s theme mappings",
+            "Structured %s events with %s entity mentions, %s classifications, %s theme mappings, and filtered %s articles via triage",
             result["event_count"],
             result["entity_count"],
             result["classification_count"],
             result["theme_count"],
+            result["triage_filtered_count"],
         )
         return
 
@@ -250,6 +284,44 @@ def main() -> None:
     if args.command == "db-sync":
         result = catalog.refresh_processed_views()
         LOGGER.info("DuckDB catalog refreshed for %s datasets", result["dataset_count"])
+        return
+
+    if args.command == "llm-check":
+        if not settings.llm_runtime_enabled:
+            raise RuntimeError(
+                "LLM runtime is not enabled. Set GEMINI_API_KEY in the environment or .env."
+            )
+        client = GeminiClient(settings)
+        result = client.generate_structured(
+            config=LLMStructuredCallConfig(
+                workflow="llm_check",
+                prompt_version=ARTICLE_TRIAGE_PROMPT_VERSION,
+                schema_name="ArticleTriageResponse",
+                schema_version="1",
+                model_tier=ModelTier.FLASH,
+                temperature=0.0,
+                max_output_tokens=250,
+            ),
+            system_prompt=ARTICLE_TRIAGE_SYSTEM_PROMPT,
+            user_prompt=(
+                "Headline: TSMC says advanced packaging capacity remains tight.\n"
+                "Source: Test\n"
+                "Source URL: https://example.com/test\n"
+                "Canonical URL: https://example.com/test\n"
+                "Published At: 2026-04-13T00:00:00+00:00\n\n"
+                "Description:\nAdvanced packaging constraints continue to affect AI accelerator supply.\n\n"
+                "Excerpt:\nNone\n\n"
+                "Discovered Summary Snippet:\nNone\n\n"
+                "Body Text:\nTSMC and Amkor discussed advanced packaging bottlenecks tied to AI server demand.\n\n"
+                "Return only a JSON object that matches the required schema."
+            ),
+            response_model=ArticleTriageResponse,
+        )
+        LOGGER.info(
+            "LLM check succeeded with model %s and confidence %.2f",
+            result.model_name,
+            result.parsed.confidence,
+        )
         return
 
     parser.error(f"Unknown command: {args.command}")

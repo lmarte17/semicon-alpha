@@ -17,6 +17,19 @@ class Settings(BaseSettings):
     fmp_base_url: str = "https://financialmodelingprep.com/stable"
     fmp_api_key: str | None = Field(default=None, alias="FMP_API_KEY")
     market_profile_refresh_days: int = 7
+    llm_enabled: bool = Field(default=True, alias="LLM_ENABLED")
+    gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta"
+    gemini_api_key: str | None = Field(default=None, alias="GEMINI_API_KEY")
+    gemini_flash_model: str = Field(
+        default="gemini-3.1-flash-lite-preview",
+        alias="GEMINI_FLASH_MODEL",
+    )
+    gemini_pro_model: str = Field(
+        default="gemini-3.1-pro-preview",
+        alias="GEMINI_PRO_MODEL",
+    )
+    gemini_timeout_seconds: float = 45.0
+    llm_article_triage_min_confidence: float = 0.7
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -56,6 +69,10 @@ class Settings(BaseSettings):
     def configs_dir(self) -> Path:
         return self.project_root / "configs"
 
+    @property
+    def llm_runtime_enabled(self) -> bool:
+        return self.llm_enabled and bool(self.gemini_api_key)
+
     def ensure_directories(self) -> None:
         for directory in (
             self.data_dir,
@@ -72,3 +89,10 @@ class Settings(BaseSettings):
                 "FMP_API_KEY is not configured. Set it in the environment or .env."
             )
         return self.fmp_api_key
+
+    def require_gemini_api_key(self) -> str:
+        if not self.gemini_api_key:
+            raise RuntimeError(
+                "GEMINI_API_KEY is not configured. Set it in the environment or .env."
+            )
+        return self.gemini_api_key

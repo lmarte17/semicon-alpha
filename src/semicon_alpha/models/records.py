@@ -96,6 +96,53 @@ class EnrichedArticleRecord(FlatRecordModel):
     error_message: str | None = None
 
 
+class LLMJobRunRecord(FlatRecordModel):
+    job_id: str
+    workflow: str
+    source_id: str
+    status: str
+    model_name: str
+    prompt_version: str
+    schema_name: str
+    schema_version: str
+    request_hash: str
+    latency_ms: int | None = None
+    input_token_count: int | None = None
+    output_token_count: int | None = None
+    cached_input_token_count: int | None = None
+    error_message: str | None = None
+    response_preview: str | None = None
+    metadata_json: dict[str, Any] | list[Any] | None = None
+    started_at_utc: datetime
+    completed_at_utc: datetime
+
+
+class ArticleLLMTriageRecord(FlatRecordModel):
+    article_id: str
+    source_url: str
+    canonical_url: str | None = None
+    source: str
+    headline: str
+    content_sha256: str | None = None
+    relevance_label: str
+    is_semiconductor_relevant: bool
+    is_event_worthy: bool
+    article_type: str
+    primary_subjects: list[str]
+    mentioned_companies: list[str]
+    mentioned_technologies: list[str]
+    mentioned_countries: list[str]
+    confidence: float
+    abstain: bool
+    needs_review: bool
+    rejection_reason: str | None = None
+    reasoning_summary: str
+    model_name: str
+    prompt_version: str
+    schema_version: str
+    processed_at_utc: datetime
+
+
 class EventEntityMentionRecord(FlatRecordModel):
     event_id: str
     article_id: str

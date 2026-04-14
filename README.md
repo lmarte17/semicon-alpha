@@ -1,6 +1,6 @@
 # Semicon Alpha
 
-This repository now contains the Phase 1 intelligence engine plus the first five terminal waves for a semiconductor event propagation product: Wave 1 analyst workflows, Wave 2 operational monitoring, Wave 3 historical research/reporting, Wave 4 scenario/thesis workflows, and Wave 5 ontology/infrastructure expansion.
+This repository now contains the Phase 1 intelligence engine plus the first five terminal waves for a semiconductor event propagation product: Wave 1 analyst workflows, Wave 2 operational monitoring, Wave 3 historical research/reporting, Wave 4 scenario/thesis workflows, and Wave 5 ontology/infrastructure expansion. It also includes the first two LLM Intelligence waves: Gemini-backed platform foundations and article relevance triage.
 
 The current build implements the Phase 1 ingestion, Event Intelligence, Graph / Influence Modeling, Exposure Scoring, Lag Modeling, and Market Evaluation layers described in [zervehack_semiconductor_project_plan.md](./zervehack_semiconductor_project_plan.md), with decisions shaped by the longer-term analyst terminal in [PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md](./PHASE_2_INTELLIGENCE_TERMINAL_SPEC.md).
 
@@ -9,6 +9,8 @@ The current build implements the Phase 1 ingestion, Event Intelligence, Graph / 
 - Lithos snapshot ingestion for semiconductor news discovery
 - Source-article enrichment with metadata and body extraction
 - Event Intelligence conversion from enriched articles into structured semiconductor event records
+- Gemini-backed structured-output foundation for optional LLM intelligence workflows
+- LLM job logging and article relevance triage ahead of Event Intelligence
 - Graph construction from company, theme, ontology, and derived segment nodes/edges
 - Event anchoring and deterministic first-/second-/third-order graph propagation outputs
 - Lag prediction for event-company candidates using graph depth, metadata, and optional historical feedback
@@ -42,6 +44,7 @@ Phase 2 requires stable entities, evidence links, document history, and inspecta
 ## Quick Start
 
 1. Ensure `FMP_API_KEY` is available in the environment or `.env`.
+   Optional for LLM-assisted workflows: set `GEMINI_API_KEY` as well.
 2. Install the package:
 
 ```bash
@@ -60,67 +63,76 @@ semicon-alpha news-snapshot
 semicon-alpha news-enrich --limit 20
 ```
 
-5. Convert enriched articles into structured event datasets:
+5. Optional: verify Gemini connectivity and run article relevance triage:
+
+```bash
+semicon-alpha llm-check
+semicon-alpha article-triage --limit 20
+```
+
+6. Convert enriched articles into structured event datasets:
 
 ```bash
 semicon-alpha event-sync --limit 20
 ```
 
-6. Build reference datasets and fetch company profiles:
+When `GEMINI_API_KEY` is configured, `event-sync` will reuse article triage and suppress only confidently irrelevant articles; otherwise it falls back to the deterministic path.
+
+7. Build reference datasets and fetch company profiles:
 
 ```bash
 semicon-alpha reference-sync
 ```
 
-7. Build unified graph datasets:
+8. Build unified graph datasets:
 
 ```bash
 semicon-alpha graph-sync
 ```
 
-8. Generate event anchors and propagated graph influence outputs:
+9. Generate event anchors and propagated graph influence outputs:
 
 ```bash
 semicon-alpha graph-propagate --limit 20
 ```
 
-9. Generate lag predictions for impacted companies:
+10. Generate lag predictions for impacted companies:
 
 ```bash
 semicon-alpha lag-sync --limit 20
 ```
 
-10. Rank event-company impact candidates:
+11. Rank event-company impact candidates:
 
 ```bash
 semicon-alpha score-sync --limit 20
 ```
 
-11. Backfill prices for the curated universe and benchmarks:
+12. Backfill prices for the curated universe and benchmarks:
 
 ```bash
 semicon-alpha market-sync --start 2024-01-01
 ```
 
-12. Evaluate predictions against realized market moves:
+13. Evaluate predictions against realized market moves:
 
 ```bash
 semicon-alpha evaluate-sync --limit 20
 ```
 
-13. Build the hybrid retrieval index for terminal search:
+14. Build the hybrid retrieval index for terminal search:
 
 ```bash
 semicon-alpha retrieval-sync
 ```
 
-14. Refresh DuckDB views for the processed datasets:
+15. Refresh DuckDB views for the processed datasets:
 
 ```bash
 semicon-alpha db-sync
 ```
 
-15. Run the Wave 5 intelligence terminal locally:
+16. Run the Wave 5 intelligence terminal locally:
 
 ```bash
 semicon-alpha serve --host 127.0.0.1 --port 8000
@@ -181,6 +193,8 @@ Current API routes are mounted under `/api`, and the browser shell is served at 
 - `data/processed/news_article_observations.parquet`
 - `data/processed/news_articles_discovered.parquet`
 - `data/processed/news_articles_enriched.parquet`
+- `data/processed/llm_job_runs.parquet`
+- `data/processed/article_llm_triage.parquet`
 - `data/processed/news_event_entities.parquet`
 - `data/processed/news_event_classifications.parquet`
 - `data/processed/news_event_themes.parquet`
@@ -216,6 +230,7 @@ Current API routes are mounted under `/api`, and the browser shell is served at 
 - Lithos is treated as a discovery surface, not the final source of truth for `published_at`.
 - FMP is used for price history and company profiles.
 - Event Intelligence is deterministic and config-driven for the current MVP, with tracked-universe entity extraction and taxonomy-based event classification.
+- The initial LLM intelligence layer is Gemini-backed and schema-bound. Wave 0 provides the shared client, routing, and audit log. Wave 1 adds article triage, and `event-sync` only suppresses articles when triage is confidently negative; abstentions still fall back to deterministic processing.
 - The graph layer is parquet-first: typed node/edge datasets are the source of truth, and propagation is deterministic and rule-driven.
 - Wave 5 ontology expansion is still curated/config-driven rather than sourced from an external knowledge graph.
 - Graph history is snapshot-based and append-only; it is designed for inspection and product timelines, not high-frequency streaming updates.

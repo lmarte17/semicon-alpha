@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 import pandas as pd
 
 from semicon_alpha.events.taxonomy import EventTaxonomy, EventTypeRule, load_event_taxonomy
+from semicon_alpha.llm.workflows import ArticleTriageService
 from semicon_alpha.models.records import (
     EventClassificationRecord,
     EventEntityMentionRecord,
@@ -243,6 +244,7 @@ class EventIntelligenceService:
         self.event_theme_path = settings.processed_dir / "news_event_themes.parquet"
         self.event_path = settings.processed_dir / "news_events_structured.parquet"
         self.taxonomy_path = settings.configs_dir / "event_taxonomy.yaml"
+        self.article_triage_service = ArticleTriageService(settings)
 
     def run(self, limit: int | None = None, force: bool = False) -> dict[str, int]:
         if not self.enriched_article_path.exists():
@@ -252,6 +254,8 @@ class EventIntelligenceService:
                 "entity_count": 0,
                 "classification_count": 0,
                 "theme_count": 0,
+                "triage_count": 0,
+                "triage_filtered_count": 0,
             }
 
         enriched = pd.read_parquet(self.enriched_article_path)
@@ -262,6 +266,8 @@ class EventIntelligenceService:
                 "entity_count": 0,
                 "classification_count": 0,
                 "theme_count": 0,
+                "triage_count": 0,
+                "triage_filtered_count": 0,
             }
 
         candidates = self._prepare_candidate_frame(enriched)
@@ -272,6 +278,8 @@ class EventIntelligenceService:
                 "entity_count": 0,
                 "classification_count": 0,
                 "theme_count": 0,
+                "triage_count": 0,
+                "triage_filtered_count": 0,
             }
 
         if not force and self.event_path.exists():
@@ -283,6 +291,12 @@ class EventIntelligenceService:
         if limit is not None:
             candidates = candidates.head(limit)
 
+        triage_result = pd.DataFrame()
+        triage_filtered_count = 0
+        if not candidates.empty and self.settings.llm_runtime_enabled:
+            triage_result = self.article_triage_service.run(candidates, force=force)
+            candidates, triage_filtered_count = self._apply_triage_filter(candidates, triage_result)
+
         if candidates.empty:
             return {
                 "processed_count": 0,
@@ -290,6 +304,8 @@ class EventIntelligenceService:
                 "entity_count": 0,
                 "classification_count": 0,
                 "theme_count": 0,
+                "triage_count": len(triage_result),
+                "triage_filtered_count": triage_filtered_count,
             }
 
         taxonomy = load_event_taxonomy(self.taxonomy_path)
@@ -346,7 +362,27 @@ class EventIntelligenceService:
             "entity_count": len(entity_records),
             "classification_count": len(classification_records),
             "theme_count": len(theme_records),
+            "triage_count": len(triage_result),
+            "triage_filtered_count": triage_filtered_count,
         }
+
+    def _apply_triage_filter(
+        self,
+        candidates: pd.DataFrame,
+        triage_frame: pd.DataFrame,
+    ) -> tuple[pd.DataFrame, int]:
+        if triage_frame.empty:
+            return candidates, 0
+        triage_by_article = {
+            str(row["article_id"]): row for row in triage_frame.to_dict(orient="records")
+        }
+        allowed_article_ids = [
+            str(article_id)
+            for article_id in candidates["article_id"].astype(str).tolist()
+            if self.article_triage_service.should_allow(triage_by_article.get(str(article_id)))
+        ]
+        filtered = candidates.loc[candidates["article_id"].astype(str).isin(allowed_article_ids)].copy()
+        return filtered, max(0, len(candidates) - len(filtered))
 
     def _prepare_candidate_frame(self, enriched: pd.DataFrame) -> pd.DataFrame:
         frame = enriched.copy()
